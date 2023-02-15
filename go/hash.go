@@ -7,6 +7,7 @@ import (
 	"errors"
 	"io"
 	"log"
+	"os"
 	"sync"
 )
 
@@ -86,6 +87,18 @@ func SplitAndComputerHash(reader io.Reader, segmentSize int64, ecShards int) ([]
 	}
 
 	return result, contentLen, nil
+}
+
+// ComputerHashFromFile open a local file and compute hash result
+func ComputerHashFromFile(filePath string, segmentSize int64, ecShards int) ([]string, int64, error) {
+	fReader, err := os.Open(filePath)
+	// If any error fail quickly here.
+	if err != nil {
+		return nil, 0, err
+	}
+	defer fReader.Close()
+
+	return SplitAndComputerHash(fReader, segmentSize, ecShards)
 }
 
 // CalcSHA256Hex compute checksum of sha256 hash and encode it to hex
