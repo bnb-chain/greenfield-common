@@ -3,10 +3,10 @@ package erasure
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"sync"
 
 	"github.com/klauspost/reedsolomon"
+	"github.com/rs/zerolog/log"
 )
 
 // RSEncoder - reedSolomon RSEncoder encoding details.
@@ -41,8 +41,7 @@ func NewRSEncoder(dataShards, parityShards int, blockSize int64) (r RSEncoder, e
 				reedsolomon.WithAutoGoroutines(int(r.ShardSize())))
 
 			if err != nil {
-				log.Printf("new RS encoder fail, dataShards %d, parityShards %d", dataShards,
-					parityShards)
+				log.Error().Msg("new RS encoder fail:" + err.Error())
 			}
 			encoder = r
 		})
@@ -59,11 +58,11 @@ func (r *RSEncoder) EncodeData(content []byte) ([][]byte, error) {
 	}
 	encoded, err := r.encoder().Split(content)
 	if err != nil {
-		log.Println("encoder split data error ", err.Error())
+		log.Error().Msg("encoder split data error: " + err.Error())
 		return nil, err
 	}
 	if err = r.encoder().Encode(encoded); err != nil {
-		log.Println("encoder encode error ", err.Error())
+		log.Error().Msg("encoder encode fail:" + err.Error())
 		return nil, err
 	}
 	return encoded, nil
@@ -89,12 +88,12 @@ func (r *RSEncoder) DecodeDataShards(content [][]byte) error {
 // The func recreate the missing shards if possible.
 func (r *RSEncoder) DecodeShards(data [][]byte) error {
 	if err := r.encoder().Reconstruct(data); err != nil {
-		log.Println("recreate the missing shard fail", err)
+		log.Error().Msg("recreate the missing shard fail:" + err.Error())
 		return err
 	}
 	ok, err := r.encoder().Verify(data)
 	if err != nil {
-		log.Println("decode verify fail", err.Error())
+		log.Error().Msg("decode verify fail:" + err.Error())
 		return err
 	}
 
@@ -118,7 +117,7 @@ func (r *RSEncoder) ShardSize() int64 {
 func (r *RSEncoder) GetOriginalData(shardsData [][]byte, originLength int64) ([]byte, error) {
 	err := r.DecodeDataShards(shardsData)
 	if err != nil {
-		log.Printf("decode shards fail:%s", err.Error())
+		log.Error().Msg("decode shards fail:" + err.Error())
 		return []byte(""), err
 	}
 

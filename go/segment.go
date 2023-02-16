@@ -4,8 +4,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/bnb-chain/greenfield-storage-provider/pkg/redundancy/erasure"
-	"github.com/bnb-chain/greenfield-storage-provider/util/log"
+	"github.com/bnb-chain/greenfield-common/go/erasure"
+	"github.com/rs/zerolog/log"
 )
 
 // PieceObject - details of the erasure encoded piece
@@ -24,7 +24,10 @@ type Segment struct {
 	Data        []byte
 }
 
-const ()
+const (
+	dataBlocks   int = 4
+	parityBlocks int = 2
+)
 
 var defaultEcConfig = ECConfig{
 	dataBlocks:   dataBlocks,
@@ -45,12 +48,12 @@ func NewSegment(size int64, content []byte, segmentId int, objectId string) *Seg
 func EncodeSegment(s *Segment) ([]*PieceObject, error) {
 	erasure, err := erasure.NewRSEncoder(defaultEcConfig.dataBlocks, defaultEcConfig.parityBlocks, s.SegmentSize)
 	if err != nil {
-		log.Error("new RSEncoder fail", err.Error())
+		log.Error().Msg("new RSEncoder fail" + err.Error())
 		return nil, err
 	}
 	shards, err := erasure.EncodeData(s.Data)
 	if err != nil {
-		log.Errorf("encode data fail %s, segment name: %s ", err, s.SegName)
+		log.Error().Msg("encode data fail :" + err.Error() + "segment name:" + s.SegName)
 		return nil, err
 	}
 
@@ -72,7 +75,7 @@ func EncodeSegment(s *Segment) ([]*PieceObject, error) {
 func DecodeSegment(pieces []*PieceObject, segmentSize int64) (*Segment, error) {
 	encoder, err := erasure.NewRSEncoder(defaultEcConfig.dataBlocks, defaultEcConfig.parityBlocks, segmentSize)
 	if err != nil {
-		log.Error("new RSEncoder fail", err.Error())
+		log.Error().Msg("new RSEncoder fail" + err.Error())
 		return nil, err
 	}
 
@@ -83,7 +86,7 @@ func DecodeSegment(pieces []*PieceObject, segmentSize int64) (*Segment, error) {
 
 	deCodeBytes, err := encoder.GetOriginalData(pieceObjectsData, segmentSize)
 	if err != nil {
-		log.Errorf("reconstruct segment content fail %s", err)
+		log.Error().Msg("reconstruct segment content fail:" + err.Error())
 		return nil, err
 	}
 
@@ -95,7 +98,7 @@ func DecodeSegment(pieces []*PieceObject, segmentSize int64) (*Segment, error) {
 	segIdStr := pieceName[segIndex+2 : ecIndex]
 	segId, err := strconv.Atoi(segIdStr)
 	if err != nil {
-		log.Errorf("fetch segment ID fail, invalid number: %s", segIdStr)
+		log.Error().Msg("fetch segment ID fail: " + err.Error())
 		return nil, err
 	}
 
@@ -112,12 +115,11 @@ func DecodeSegment(pieces []*PieceObject, segmentSize int64) (*Segment, error) {
 func EncodeRawSegment(content []byte, dataShards, parityShards int) ([][]byte, error) {
 	erasure, err := erasure.NewRSEncoder(dataShards, parityShards, int64(len(content)))
 	if err != nil {
-		log.Error("new RSEncoder fail", err)
+		log.Error().Msg("new RSEncoder fail:" + err.Error())
 		return nil, err
 	}
 	shards, err := erasure.EncodeData(content)
 	if err != nil {
-		log.Error("encode data fail %s", err)
 		return nil, err
 	}
 
@@ -127,15 +129,14 @@ func EncodeRawSegment(content []byte, dataShards, parityShards int) ([][]byte, e
 // DecodeRawSegment decode the erasure encoded data and return original content
 // If the piece data has lost, need to pass an empty bytes array as one piece
 func DecodeRawSegment(piecesData [][]byte, segmentSize int64, dataShards, parityShards int) ([]byte, error) {
-	encoder, err := erasure.NewRSEncoder(dataShards, parityShards, segmentSize)
+	encoder, err := erasure.NewRSEncoder(dataShards, pa, segmentSize)
 	if err != nil {
-		log.Error("new RSEncoder fail", err.Error())
+		log.Error().Msg("new RSEncoder fail:" + err.Error())
 		return nil, err
 	}
 
 	deCodeBytes, err := encoder.GetOriginalData(piecesData, segmentSize)
 	if err != nil {
-		log.Error("reconstruct segment content fail", err.Error())
 		return nil, err
 	}
 
