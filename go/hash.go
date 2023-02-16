@@ -11,9 +11,9 @@ import (
 	"sync"
 )
 
-// SplitAndComputerHash split the reader into segment, ec encode the data, compute the hash roots of pieces,
+// ComputerHash split the reader into segment, ec encode the data, compute the hash roots of pieces,
 // and return the hash result array list and data size
-func SplitAndComputerHash(reader io.Reader, segmentSize int64, ecShards int) ([]string, int64, error) {
+func ComputerHash(reader io.Reader, segmentSize int64, ecShards int) ([]string, int64, error) {
 	var segChecksumList [][]byte
 	var result []string
 	encodeData := make([][][]byte, ecShards)
@@ -91,14 +91,14 @@ func SplitAndComputerHash(reader io.Reader, segmentSize int64, ecShards int) ([]
 
 // ComputerHashFromFile open a local file and compute hash result
 func ComputerHashFromFile(filePath string, segmentSize int64, ecShards int) ([]string, int64, error) {
-	fReader, err := os.Open(filePath)
+	f, err := os.Open(filePath)
 	// If any error fail quickly here.
 	if err != nil {
 		return nil, 0, err
 	}
-	defer fReader.Close()
+	defer f.Close()
 
-	return SplitAndComputerHash(fReader, segmentSize, ecShards)
+	return ComputerHash(f, segmentSize, ecShards)
 }
 
 // CalcSHA256Hex compute checksum of sha256 hash and encode it to hex
