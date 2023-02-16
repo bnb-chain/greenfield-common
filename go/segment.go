@@ -24,10 +24,7 @@ type Segment struct {
 	Data        []byte
 }
 
-const (
-	dataBlocks   int = 4
-	parityBlocks int = 2
-)
+const ()
 
 var defaultEcConfig = ECConfig{
 	dataBlocks:   dataBlocks,
@@ -112,8 +109,8 @@ func DecodeSegment(pieces []*PieceObject, segmentSize int64) (*Segment, error) {
 }
 
 // EncodeRawSegment encode a raw byte array and return erasure encoded shards in orders
-func EncodeRawSegment(content []byte) ([][]byte, error) {
-	erasure, err := erasure.NewRSEncoder(defaultEcConfig.dataBlocks, defaultEcConfig.parityBlocks, int64(len(content)))
+func EncodeRawSegment(content []byte, dataShards, parityShards int) ([][]byte, error) {
+	erasure, err := erasure.NewRSEncoder(dataShards, parityShards, int64(len(content)))
 	if err != nil {
 		log.Error("new RSEncoder fail", err)
 		return nil, err
@@ -129,8 +126,8 @@ func EncodeRawSegment(content []byte) ([][]byte, error) {
 
 // DecodeRawSegment decode the erasure encoded data and return original content
 // If the piece data has lost, need to pass an empty bytes array as one piece
-func DecodeRawSegment(piecesData [][]byte, segmentSize int64) ([]byte, error) {
-	encoder, err := erasure.NewRSEncoder(defaultEcConfig.dataBlocks, defaultEcConfig.parityBlocks, segmentSize)
+func DecodeRawSegment(piecesData [][]byte, segmentSize int64, dataShards, parityShards int) ([]byte, error) {
+	encoder, err := erasure.NewRSEncoder(dataShards, parityShards, segmentSize)
 	if err != nil {
 		log.Error("new RSEncoder fail", err.Error())
 		return nil, err

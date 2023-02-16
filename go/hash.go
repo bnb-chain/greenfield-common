@@ -13,10 +13,10 @@ import (
 
 // ComputerHash split the reader into segment, ec encode the data, compute the hash roots of pieces,
 // and return the hash result array list and data size
-func ComputerHash(reader io.Reader, segmentSize int64, ecShards int) ([]string, int64, error) {
+func ComputerHash(reader io.Reader, segmentSize int64, dataShards, parityShards int) ([]string, int64, error) {
 	var segChecksumList [][]byte
 	var result []string
-	encodeData := make([][][]byte, ecShards)
+	encodeData := make([][][]byte, dataShards+parityShards)
 	seg := make([]byte, segmentSize)
 
 	contentLen := int64(0)
@@ -44,7 +44,7 @@ func ComputerHash(reader io.Reader, segmentSize int64, ecShards int) ([]string, 
 			}
 
 			// get erasure encode bytes
-			encodeShards, err := EncodeRawSegment(seg[:n])
+			encodeShards, err := EncodeRawSegment(seg[:n], dataShards, parityShards)
 
 			if err != nil {
 				log.Println("erasure encode err:", err)
@@ -90,7 +90,7 @@ func ComputerHash(reader io.Reader, segmentSize int64, ecShards int) ([]string, 
 }
 
 // ComputerHashFromFile open a local file and compute hash result
-func ComputerHashFromFile(filePath string, segmentSize int64, ecShards int) ([]string, int64, error) {
+func ComputerHashFromFile(filePath string, segmentSize int64, dataShards, parityShards int) ([]string, int64, error) {
 	f, err := os.Open(filePath)
 	// If any error fail quickly here.
 	if err != nil {
@@ -98,7 +98,7 @@ func ComputerHashFromFile(filePath string, segmentSize int64, ecShards int) ([]s
 	}
 	defer f.Close()
 
-	return ComputerHash(f, segmentSize, ecShards)
+	return ComputerHash(f, segmentSize, dataShards, parityShards)
 }
 
 // CalcSHA256Hex compute checksum of sha256 hash and encode it to hex

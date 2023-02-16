@@ -9,8 +9,9 @@ import (
 )
 
 const (
-	segmentSize = 16 * 1024 * 1024
-	ecShards    = 6
+	segmentSize  = 16 * 1024 * 1024
+	dataBlocks   = 4
+	parityBlocks = 2
 )
 
 func TestHash(t *testing.T) {
@@ -18,7 +19,7 @@ func TestHash(t *testing.T) {
 	contentToHash := createTestData(length)
 	start := time.Now()
 
-	hashResult, size, err := ComputerHash(contentToHash, int64(segmentSize), ecShards)
+	hashResult, size, err := ComputerHash(contentToHash, int64(segmentSize), dataBlocks, parityBlocks)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -28,7 +29,7 @@ func TestHash(t *testing.T) {
 		t.Errorf("compute size error")
 	}
 
-	if len(hashResult) != ecShards+1 {
+	if len(hashResult) != dataBlocks+parityBlocks+1 {
 		t.Errorf("cimpute hash num not right")
 	}
 
@@ -38,9 +39,9 @@ func TestHash(t *testing.T) {
 		}
 	}
 
-	hashList, _, err := ComputerHashFromFile("hash.go", int64(segmentSize), ecShards)
+	hashList, _, err := ComputerHashFromFile("hash.go", int64(segmentSize), dataBlocks, parityBlocks)
 
-	if len(hashList) != ecShards+1 {
+	if len(hashList) != dataBlocks+parityBlocks+1 {
 		t.Errorf("cimpute hash num not right")
 	}
 

@@ -94,7 +94,7 @@ func TestRawSegmentEnode(t *testing.T) {
 	segmentSize := 16*1024*1024 - 2
 	segmentData := initSegmentData(segmentSize)
 
-	piecesShards, err := EncodeRawSegment(segmentData)
+	piecesShards, err := EncodeRawSegment(segmentData, dataBlocks, parityBlocks)
 	if err != nil {
 		t.Errorf("segment encode fail")
 	}
@@ -108,7 +108,7 @@ func TestRawSegmentEnode(t *testing.T) {
 	shardsToRecover[4] = piecesShards[4]
 	shardsToRecover[5] = piecesShards[5]
 
-	deCodeBytes, err := DecodeRawSegment(shardsToRecover, int64(segmentSize))
+	deCodeBytes, err := DecodeRawSegment(shardsToRecover, int64(segmentSize), dataBlocks, parityBlocks)
 	if err != nil {
 		t.Errorf("decode fail")
 	} else {
@@ -125,7 +125,7 @@ func TestRawSegmentEnode(t *testing.T) {
 	shardsToRecover[3] = []byte("")
 	shardsToRecover[4] = []byte("")
 
-	deCodeBytes, err = DecodeRawSegment(shardsToRecover, int64(segmentSize))
+	deCodeBytes, err = DecodeRawSegment(shardsToRecover, int64(segmentSize), dataBlocks, parityBlocks)
 	if err == nil {
 		t.Errorf("segment decode should fail")
 	}
