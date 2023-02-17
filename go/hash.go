@@ -2,13 +2,11 @@ package redundancy
 
 import (
 	"bytes"
-	"crypto/sha256"
-	"encoding/hex"
-	"errors"
 	"io"
-	"log"
 	"os"
 	"sync"
+
+	"github.com/rs/zerolog/log"
 )
 
 // ComputerHash split the reader into segment, ec encode the data, compute the hash roots of pieces,
@@ -25,7 +23,7 @@ func ComputerHash(reader io.Reader, segmentSize int64, dataShards, parityShards 
 		n, err := reader.Read(seg)
 		if err != nil {
 			if err != io.EOF {
-				log.Println("content read error:", err)
+				log.Error().Msg("content read fail:" + err.Error())
 				return nil, 0, err
 			}
 			break
@@ -37,7 +35,7 @@ func ComputerHash(reader io.Reader, segmentSize int64, dataShards, parityShards 
 			if segmentReader != nil {
 				checksum, err := CalcSHA256HashByte(segmentReader)
 				if err != nil {
-					log.Println("compute checksum err:", err)
+					log.Error().Msg("compute checksum fail:" + err.Error())
 					return nil, 0, err
 				}
 				segChecksumList = append(segChecksumList, checksum)
@@ -47,7 +45,6 @@ func ComputerHash(reader io.Reader, segmentSize int64, dataShards, parityShards 
 			encodeShards, err := EncodeRawSegment(seg[:n], dataShards, parityShards)
 
 			if err != nil {
-				log.Println("erasure encode err:", err)
 				return nil, 0, err
 			}
 
@@ -94,38 +91,10 @@ func ComputerHashFromFile(filePath string, segmentSize int64, dataShards, parity
 	f, err := os.Open(filePath)
 	// If any error fail quickly here.
 	if err != nil {
+		log.Error().Msg("open file fail:" + err.Error())
 		return nil, 0, err
 	}
 	defer f.Close()
 
 	return ComputerHash(f, segmentSize, dataShards, parityShards)
-}
-
-// CalcSHA256Hex compute checksum of sha256 hash and encode it to hex
-func CalcSHA256Hex(buf []byte) (hexStr string) {
-	sum := CalcSHA256(buf)
-	hexStr = hex.EncodeToString(sum)
-	return
-}
-
-// CalcSHA256 compute checksum of sha256 from byte array
-func CalcSHA256(buf []byte) []byte {
-	h := sha256.New()
-	h.Write(buf)
-	sum := h.Sum(nil)
-	return sum[:]
-}
-
-// CalcSHA256HashByte compute checksum of sha256 from io.reader
-func CalcSHA256HashByte(body io.Reader) ([]byte, error) {
-	if body == nil {
-		return []byte(""), errors.New("body empty")
-	}
-	buf := make([]byte, 1024)
-	h := sha256.New()
-	if _, err := io.CopyBuffer(h, body, buf); err != nil {
-		return []byte(""), err
-	}
-	hash := h.Sum(nil)
-	return hash, nil
 }
