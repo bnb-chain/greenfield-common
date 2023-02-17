@@ -129,7 +129,7 @@ func EncodeRawSegment(content []byte, dataShards, parityShards int) ([][]byte, e
 // DecodeRawSegment decode the erasure encoded data and return original content
 // If the piece data has lost, need to pass an empty bytes array as one piece
 func DecodeRawSegment(piecesData [][]byte, segmentSize int64, dataShards, parityShards int) ([]byte, error) {
-	encoder, err := erasure.NewRSEncoder(dataShards, pa, segmentSize)
+	encoder, err := erasure.NewRSEncoder(dataShards, parityShards, segmentSize)
 	if err != nil {
 		log.Error().Msg("new RSEncoder fail:" + err.Error())
 		return nil, err

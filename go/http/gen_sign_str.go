@@ -41,13 +41,13 @@ func getCanonicalHeaders(req *http.Request, supportHeaders map[string]struct{}) 
 			content.WriteByte('\n')
 		} else {
 			containHostHeader = true
-			content.WriteString(getHostInfo(req))
+			content.WriteString(utils.GetHostInfo(req))
 			content.WriteByte('\n')
 		}
 	}
 
 	if !containHostHeader {
-		content.WriteString(getHostInfo(req))
+		content.WriteString(utils.GetHostInfo(req))
 		content.WriteByte('\n')
 	}
 
@@ -94,7 +94,7 @@ func GetMsgToSign(req *http.Request) []byte {
 
 
 func initSupportHeaders() map[string]struct{} {
-	supportMap := make(map[string]struct{}, 50)
+	supportMap := make(map[string]struct{})
 	for _, header := range supportHeads {
 		emptyStruct := new(struct{})
 		supportMap[header] = *emptyStruct
@@ -102,14 +102,3 @@ func initSupportHeaders() map[string]struct{} {
 	return supportMap
 }
 
-// getHostInfo returns host header from the request
-func getHostInfo(req *http.Request) string {
-	host := req.Header.Get("host")
-	if host != "" {
-		return host
-	}
-	if req.Host != "" {
-		return req.Host
-	}
-	return req.URL.Host
-}

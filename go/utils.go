@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"io"
+	"net/http"
 	"regexp"
 	"strings"
 	"unicode/utf8"
@@ -71,4 +72,16 @@ func EncodePath(pathName string) string {
 		}
 	}
 	return encodedPathname.String()
+}
+
+// GetHostInfo returns host header from the request
+func GetHostInfo(req *http.Request) string {
+	host := req.Header.Get("host")
+	if host != "" {
+		return host
+	}
+	if req.Host != "" {
+		return req.Host
+	}
+	return req.URL.Host
 }
