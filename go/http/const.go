@@ -6,7 +6,7 @@ const (
 	HTTPHeaderResource        = "X-Gnfd-Resource"
 	HTTPHeaderPieceIndex      = "X-Gnfd-Piece-Index"
 	HTTPHeaderObjectId        = "X-Gnfd-Object-Id"
-	HTTPHeaderSPAddr          = "X-Gnfd-Sp-Addr"
+	HTTPHeaderRedundancyIndex = "X-Gnfd-Redundancy-Index"
 
 	HTTPHeaderContentMD5    = "Content-MD5"
 	HTTPHeaderDate          = "X-Gnfd-Date"

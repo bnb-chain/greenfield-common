@@ -11,8 +11,8 @@ import (
 	utils "github.com/bnb-chain/greenfield-common/go"
 )
 
-var supportHeads = []string {
-	HTTPHeaderContentSHA256, HTTPHeaderTransactionHash, HTTPHeaderObjectId, HTTPHeaderSPAddr, HTTPHeaderResource,
+var supportHeads = []string{
+	HTTPHeaderContentSHA256, HTTPHeaderTransactionHash, HTTPHeaderObjectId, HTTPHeaderRedundancyIndex, HTTPHeaderResource,
 	HTTPHeaderDate, HTTPHeaderRange, HTTPHeaderPieceIndex, HTTPHeaderContentType, HTTPHeaderContentMD5,
 }
 
@@ -92,7 +92,6 @@ func GetMsgToSign(req *http.Request) []byte {
 	return crypto.Keccak256(signBytes)
 }
 
-
 func initSupportHeaders() map[string]struct{} {
 	supportMap := make(map[string]struct{})
 	for _, header := range supportHeads {
@@ -101,4 +100,3 @@ func initSupportHeaders() map[string]struct{} {
 	}
 	return supportMap
 }
-
