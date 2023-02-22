@@ -7,8 +7,10 @@ import (
 	"testing"
 )
 
-const dataShards int = 4
-const parityShards int = 2
+const (
+	dataShards   int = 4
+	parityShards int = 2
+)
 
 func TestRSEncoder(t *testing.T) {
 	blockSize := 16 * 1024 * 1024
@@ -29,7 +31,7 @@ func TestRSEncoder(t *testing.T) {
 	if err != nil {
 		t.Errorf("encode fail")
 	}
-	log.Println("encode succ")
+	log.Println("encode successfully")
 
 	// set 2 dataBlock of origin as empty block
 	shardsToRecover := make([][]byte, 6)
@@ -44,7 +46,7 @@ func TestRSEncoder(t *testing.T) {
 	if err != nil {
 		t.Errorf("decode fail")
 	} else {
-		log.Println("decode succ")
+		log.Println("decode successfully")
 	}
 
 	// compare data Blocks

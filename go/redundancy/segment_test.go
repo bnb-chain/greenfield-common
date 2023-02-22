@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func TestSegmentPieceEnode(t *testing.T) {
+func TestSegmentPieceEncode(t *testing.T) {
 	segmentSize := 16*1024*1024 - 2
 	// generate encode source data
 	segmentData := initSegmentData(segmentSize)
@@ -28,17 +28,17 @@ func TestSegmentPieceEnode(t *testing.T) {
 	}
 
 	// set 2 dataBlocks as empty, decode should success
-	shardsToReocver := make([]*PieceObject, 6)
+	shardsToRecover := make([]*PieceObject, 6)
 
-	shardsToReocver[0] = piecesObjects[0]
-	shardsToReocver[1] = piecesObjects[1]
-	shardsToReocver[2] = &PieceObject{}
-	shardsToReocver[3] = &PieceObject{}
-	shardsToReocver[4] = piecesObjects[4] // priority block
-	shardsToReocver[5] = piecesObjects[5] // priority block
+	shardsToRecover[0] = piecesObjects[0]
+	shardsToRecover[1] = piecesObjects[1]
+	shardsToRecover[2] = &PieceObject{}
+	shardsToRecover[3] = &PieceObject{}
+	shardsToRecover[4] = piecesObjects[4] // priority block
+	shardsToRecover[5] = piecesObjects[5] // priority block
 
 	start := time.Now()
-	decodeSegment, err := DecodeSegment(shardsToReocver, int64(segmentSize))
+	decodeSegment, err := DecodeSegment(shardsToRecover, int64(segmentSize))
 	if err != nil {
 		t.Errorf("segment Reconstruct fail")
 	}
@@ -55,14 +55,14 @@ func TestSegmentPieceEnode(t *testing.T) {
 	}
 
 	// set 1 data block and 1 priority block as empty, decode should success
-	shardsToReocver[0] = piecesObjects[0]
-	shardsToReocver[1] = &PieceObject{}
-	shardsToReocver[2] = piecesObjects[2]
-	shardsToReocver[3] = piecesObjects[3]
-	shardsToReocver[4] = &PieceObject{}   // priority block
-	shardsToReocver[5] = piecesObjects[5] // priority block
+	shardsToRecover[0] = piecesObjects[0]
+	shardsToRecover[1] = &PieceObject{}
+	shardsToRecover[2] = piecesObjects[2]
+	shardsToRecover[3] = piecesObjects[3]
+	shardsToRecover[4] = &PieceObject{}   // priority block
+	shardsToRecover[5] = piecesObjects[5] // priority block
 
-	decodeSegment, err = DecodeSegment(shardsToReocver, int64(segmentSize))
+	decodeSegment, err = DecodeSegment(shardsToRecover, int64(segmentSize))
 	if err != nil {
 		t.Errorf("segment Reconstruct fail")
 	}
@@ -77,24 +77,24 @@ func TestSegmentPieceEnode(t *testing.T) {
 	}
 
 	// set 2 data block and 1 priority block as empty, decode should fail
-	shardsToReocver[0] = piecesObjects[0]
-	shardsToReocver[1] = &PieceObject{}
-	shardsToReocver[2] = &PieceObject{}
-	shardsToReocver[3] = piecesObjects[3]
-	shardsToReocver[4] = &PieceObject{}   // priority block
-	shardsToReocver[5] = piecesObjects[5] // priority block
+	shardsToRecover[0] = piecesObjects[0]
+	shardsToRecover[1] = &PieceObject{}
+	shardsToRecover[2] = &PieceObject{}
+	shardsToRecover[3] = piecesObjects[3]
+	shardsToRecover[4] = &PieceObject{}   // priority block
+	shardsToRecover[5] = piecesObjects[5] // priority block
 
-	decodeSegment, err = DecodeSegment(shardsToReocver, int64(segmentSize))
+	decodeSegment, err = DecodeSegment(shardsToRecover, int64(segmentSize))
 	if err == nil {
 		t.Errorf("segment decode should fail")
 	}
 }
 
-func TestRawSegmentEnode(t *testing.T) {
+func TestRawSegmentEncode(t *testing.T) {
 	segmentSize := 16*1024*1024 - 2
 	segmentData := initSegmentData(segmentSize)
 
-	piecesShards, err := EncodeRawSegment(segmentData, dataBlocks, parityBlocks)
+	piecesShards, err := EncodeRawSegment(segmentData, DataBlocks, ParityBlocks)
 	if err != nil {
 		t.Errorf("segment encode fail")
 	}
@@ -108,7 +108,7 @@ func TestRawSegmentEnode(t *testing.T) {
 	shardsToRecover[4] = piecesShards[4]
 	shardsToRecover[5] = piecesShards[5]
 
-	deCodeBytes, err := DecodeRawSegment(shardsToRecover, int64(segmentSize), dataBlocks, parityBlocks)
+	deCodeBytes, err := DecodeRawSegment(shardsToRecover, int64(segmentSize), DataBlocks, ParityBlocks)
 	if err != nil {
 		t.Errorf("decode fail")
 	} else {
@@ -125,7 +125,7 @@ func TestRawSegmentEnode(t *testing.T) {
 	shardsToRecover[3] = []byte("")
 	shardsToRecover[4] = []byte("")
 
-	deCodeBytes, err = DecodeRawSegment(shardsToRecover, int64(segmentSize), dataBlocks, parityBlocks)
+	deCodeBytes, err = DecodeRawSegment(shardsToRecover, int64(segmentSize), DataBlocks, ParityBlocks)
 	if err == nil {
 		t.Errorf("segment decode should fail")
 	}
@@ -134,11 +134,9 @@ func TestRawSegmentEnode(t *testing.T) {
 func initSegmentData(segmentSize int) []byte {
 	// generate encode source data
 	const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-
 	segmentData := make([]byte, segmentSize)
 	for i := range segmentData {
 		segmentData[i] = letterBytes[rand.Intn(len(letterBytes))]
 	}
-
 	return segmentData
 }

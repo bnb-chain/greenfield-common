@@ -47,31 +47,31 @@ func EncodePath(pathName string) string {
 	if reservedNames.MatchString(pathName) {
 		return pathName
 	}
-	var encodedPathname strings.Builder
+	var encodedPathName strings.Builder
 	for _, s := range pathName {
 		if 'A' <= s && s <= 'Z' || 'a' <= s && s <= 'z' || '0' <= s && s <= '9' { // §2.3 Unreserved characters (mark)
-			encodedPathname.WriteRune(s)
+			encodedPathName.WriteRune(s)
 			continue
 		}
 		switch s {
 		case '-', '_', '.', '~', '/':
-			encodedPathname.WriteRune(s)
+			encodedPathName.WriteRune(s)
 			continue
 		default:
-			len := utf8.RuneLen(s)
-			if len < 0 {
+			length := utf8.RuneLen(s)
+			if length < 0 {
 				// if utf8 cannot convert return the same string as is
 				return pathName
 			}
-			u := make([]byte, len)
+			u := make([]byte, length)
 			utf8.EncodeRune(u, s)
 			for _, r := range u {
-				hex := hex.EncodeToString([]byte{r})
-				encodedPathname.WriteString("%" + strings.ToUpper(hex))
+				hexStr := hex.EncodeToString([]byte{r})
+				encodedPathName.WriteString("%" + strings.ToUpper(hexStr))
 			}
 		}
 	}
-	return encodedPathname.String()
+	return encodedPathName.String()
 }
 
 // GetHostInfo returns host header from the request

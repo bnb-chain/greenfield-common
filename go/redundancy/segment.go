@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/bnb-chain/greenfield-common/go/erasure"
+	"github.com/bnb-chain/greenfield-common/go/redundancy/erasure"
 	"github.com/rs/zerolog/log"
 )
 
@@ -25,13 +25,13 @@ type Segment struct {
 }
 
 const (
-	dataBlocks   int = 4
-	parityBlocks int = 2
+	DataBlocks   int = 4
+	ParityBlocks int = 2
 )
 
 var defaultEcConfig = ECConfig{
-	dataBlocks:   dataBlocks,
-	parityBlocks: parityBlocks,
+	dataBlocks:   DataBlocks,
+	parityBlocks: ParityBlocks,
 }
 
 // NewSegment creates a new Segment object
@@ -57,7 +57,7 @@ func EncodeSegment(s *Segment) ([]*PieceObject, error) {
 		return nil, err
 	}
 
-	pieceObjectList := make([]*PieceObject, dataBlocks+parityBlocks)
+	pieceObjectList := make([]*PieceObject, DataBlocks+ParityBlocks)
 	for index, shard := range shards {
 		piece := &PieceObject{
 			Key:       s.SegName + "_p" + strconv.Itoa(index),
@@ -79,8 +79,8 @@ func DecodeSegment(pieces []*PieceObject, segmentSize int64) (*Segment, error) {
 		return nil, err
 	}
 
-	pieceObjectsData := make([][]byte, dataBlocks+parityBlocks)
-	for i := 0; i < dataBlocks+parityBlocks; i++ {
+	pieceObjectsData := make([][]byte, DataBlocks+ParityBlocks)
+	for i := 0; i < DataBlocks+ParityBlocks; i++ {
 		pieceObjectsData[i] = pieces[i].ECdata
 	}
 
@@ -108,7 +108,6 @@ func DecodeSegment(pieces []*PieceObject, segmentSize int64) (*Segment, error) {
 		SegmentID:   segId,
 		Data:        deCodeBytes,
 	}, nil
-
 }
 
 // EncodeRawSegment encode a raw byte array and return erasure encoded shards in orders
@@ -122,7 +121,6 @@ func EncodeRawSegment(content []byte, dataShards, parityShards int) ([][]byte, e
 	if err != nil {
 		return nil, err
 	}
-
 	return shards, nil
 }
 
@@ -139,6 +137,5 @@ func DecodeRawSegment(piecesData [][]byte, segmentSize int64, dataShards, parity
 	if err != nil {
 		return nil, err
 	}
-
 	return deCodeBytes, nil
 }

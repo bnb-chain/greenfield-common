@@ -12,7 +12,7 @@ import (
 )
 
 var supportHeads = []string{
-	HTTPHeaderContentSHA256, HTTPHeaderTransactionHash, HTTPHeaderObjectId, HTTPHeaderRedundancyIndex, HTTPHeaderResource,
+	HTTPHeaderContentSHA256, HTTPHeaderTransactionHash, HTTPHeaderObjectID, HTTPHeaderRedundancyIndex, HTTPHeaderResource,
 	HTTPHeaderDate, HTTPHeaderRange, HTTPHeaderPieceIndex, HTTPHeaderContentType, HTTPHeaderContentMD5,
 }
 
@@ -50,7 +50,6 @@ func getCanonicalHeaders(req *http.Request, supportHeaders map[string]struct{}) 
 		content.WriteString(utils.GetHostInfo(req))
 		content.WriteByte('\n')
 	}
-
 	return content.String()
 }
 
@@ -81,7 +80,6 @@ func GetCanonicalRequest(req *http.Request, supportHeaders map[string]struct{}) 
 		getCanonicalHeaders(req, supportHeaders),
 		getSignedHeaders(req, supportHeaders),
 	}, "\n")
-
 	return canonicalRequest
 }
 

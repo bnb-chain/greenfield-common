@@ -6,6 +6,7 @@ import (
 	"os"
 	"sync"
 
+	"github.com/bnb-chain/greenfield-common/go/redundancy"
 	"github.com/rs/zerolog/log"
 )
 
@@ -42,8 +43,7 @@ func ComputerHash(reader io.Reader, segmentSize int64, dataShards, parityShards 
 			}
 
 			// get erasure encode bytes
-			encodeShards, err := EncodeRawSegment(seg[:n], dataShards, parityShards)
-
+			encodeShards, err := redundancy.EncodeRawSegment(seg[:n], dataShards, parityShards)
 			if err != nil {
 				return nil, 0, err
 			}
@@ -82,7 +82,6 @@ func ComputerHash(reader io.Reader, segmentSize int64, dataShards, parityShards 
 	for i := 0; i < spLen; i++ {
 		result = append(result, hashList[i])
 	}
-
 	return result, contentLen, nil
 }
 

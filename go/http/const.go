@@ -5,7 +5,7 @@ const (
 	HTTPHeaderTransactionHash = "X-Gnfd-Txn-Hash"
 	HTTPHeaderResource        = "X-Gnfd-Resource"
 	HTTPHeaderPieceIndex      = "X-Gnfd-Piece-Index"
-	HTTPHeaderObjectId        = "X-Gnfd-Object-Id"
+	HTTPHeaderObjectID        = "X-Gnfd-Object-ID"
 	HTTPHeaderRedundancyIndex = "X-Gnfd-Redundancy-Index"
 
 	HTTPHeaderContentMD5    = "Content-MD5"
