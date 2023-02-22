@@ -20,8 +20,8 @@ type Object struct {
 }
 
 type ObjectInfo struct {
-	ID         uint64
-	objectName string
-	ObjectSize uint64
-	Redundancy RedundancyConfig
+	ID            uint64
+	ObjectName    string
+	ObjectSize    uint64
+	RedundancyCfg RedundancyConfig
 }

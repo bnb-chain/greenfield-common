@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/bnb-chain/greenfield-common/redundancy"
 )
 
@@ -37,6 +39,7 @@ func TestHash(t *testing.T) {
 		}
 	}
 	hashList, _, err := ComputerHashFromFile("hash.go", int64(segmentSize), redundancy.DataBlocks, redundancy.ParityBlocks)
+	assert.Nil(t, err)
 	if len(hashList) != redundancy.DataBlocks+redundancy.ParityBlocks+1 {
 		t.Errorf("compute hash num not right")
 	}

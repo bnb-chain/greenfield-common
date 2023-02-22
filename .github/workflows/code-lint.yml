@@ -16,14 +16,15 @@ on:
 jobs:
   golangci:
     name: golangci-lint
-    runs-on: ubuntu-latest
     env:
       GOPRIVATE: github.com/bnb-chain
       GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
     timeout-minutes: 8
     strategy:
       matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
         go-version: [1.19.x]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
       - name: Setup GitHub Token

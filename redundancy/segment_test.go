@@ -84,7 +84,7 @@ func TestSegmentPieceEncode(t *testing.T) {
 	shardsToRecover[4] = &PieceObject{}   // priority block
 	shardsToRecover[5] = piecesObjects[5] // priority block
 
-	decodeSegment, err = DecodeSegment(shardsToRecover, int64(segmentSize))
+	_, err = DecodeSegment(shardsToRecover, int64(segmentSize))
 	if err == nil {
 		t.Errorf("segment decode should fail")
 	}
@@ -125,7 +125,7 @@ func TestRawSegmentEncode(t *testing.T) {
 	shardsToRecover[3] = []byte("")
 	shardsToRecover[4] = []byte("")
 
-	deCodeBytes, err = DecodeRawSegment(shardsToRecover, int64(segmentSize), DataBlocks, ParityBlocks)
+	_, err = DecodeRawSegment(shardsToRecover, int64(segmentSize), DataBlocks, ParityBlocks)
 	if err == nil {
 		t.Errorf("segment decode should fail")
 	}
