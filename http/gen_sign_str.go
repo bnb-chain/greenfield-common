@@ -6,9 +6,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/bnb-chain/greenfield-common/hash"
 	"github.com/ethereum/go-ethereum/crypto"
-
-	utils "github.com/bnb-chain/greenfield-common/go"
 )
 
 var supportHeads = []string{
@@ -41,13 +40,13 @@ func getCanonicalHeaders(req *http.Request, supportHeaders map[string]struct{}) 
 			content.WriteByte('\n')
 		} else {
 			containHostHeader = true
-			content.WriteString(utils.GetHostInfo(req))
+			content.WriteString(GetHostInfo(req))
 			content.WriteByte('\n')
 		}
 	}
 
 	if !containHostHeader {
-		content.WriteString(utils.GetHostInfo(req))
+		content.WriteString(GetHostInfo(req))
 		content.WriteByte('\n')
 	}
 	return content.String()
@@ -75,7 +74,7 @@ func GetCanonicalRequest(req *http.Request, supportHeaders map[string]struct{}) 
 	req.URL.RawQuery = strings.ReplaceAll(req.URL.Query().Encode(), "+", "%20")
 	canonicalRequest := strings.Join([]string{
 		req.Method,
-		utils.EncodePath(req.URL.Path),
+		EncodePath(req.URL.Path),
 		req.URL.RawQuery,
 		getCanonicalHeaders(req, supportHeaders),
 		getSignedHeaders(req, supportHeaders),
@@ -86,7 +85,7 @@ func GetCanonicalRequest(req *http.Request, supportHeaders map[string]struct{}) 
 // GetMsgToSign generate the msg bytes from canonicalRequest to sign
 func GetMsgToSign(req *http.Request) []byte {
 	headers := initSupportHeaders()
-	signBytes := utils.CalcSHA256([]byte(GetCanonicalRequest(req, headers)))
+	signBytes := hash.CalcSHA256([]byte(GetCanonicalRequest(req, headers)))
 	return crypto.Keccak256(signBytes)
 }
 

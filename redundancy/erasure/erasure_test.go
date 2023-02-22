@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	dataShards   int = 4
-	parityShards int = 2
+	dataShards   = 4
+	parityShards = 2
 )
 
 func TestRSEncoder(t *testing.T) {

@@ -1,4 +1,4 @@
-package redundancy
+package hash
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bnb-chain/greenfield-common/go/redundancy"
+	"github.com/bnb-chain/greenfield-common/redundancy"
 )
 
 const (

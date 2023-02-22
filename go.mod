@@ -1,4 +1,4 @@
-module github.com/bnb-chain/greenfield-common/go
+module github.com/bnb-chain/greenfield-common
 
 go 1.19
 

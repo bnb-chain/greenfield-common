@@ -4,7 +4,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/bnb-chain/greenfield-common/go/redundancy/erasure"
+	"github.com/bnb-chain/greenfield-common/redundancy/erasure"
+
 	"github.com/rs/zerolog/log"
 )
 
@@ -46,12 +47,12 @@ func NewSegment(size int64, content []byte, segmentId int, objectId string) *Seg
 
 // EncodeSegment encode to segment, return the piece content and the meta of pieces
 func EncodeSegment(s *Segment) ([]*PieceObject, error) {
-	erasure, err := erasure.NewRSEncoder(defaultEcConfig.dataBlocks, defaultEcConfig.parityBlocks, s.SegmentSize)
+	encoder, err := erasure.NewRSEncoder(defaultEcConfig.dataBlocks, defaultEcConfig.parityBlocks, s.SegmentSize)
 	if err != nil {
 		log.Error().Msg("new RSEncoder fail" + err.Error())
 		return nil, err
 	}
-	shards, err := erasure.EncodeData(s.Data)
+	shards, err := encoder.EncodeData(s.Data)
 	if err != nil {
 		log.Error().Msg("encode data fail :" + err.Error() + "segment name:" + s.SegName)
 		return nil, err

@@ -1,4 +1,4 @@
-package redundancy
+package hash
 
 import (
 	"bytes"
@@ -6,8 +6,9 @@ import (
 	"os"
 	"sync"
 
-	"github.com/bnb-chain/greenfield-common/go/redundancy"
 	"github.com/rs/zerolog/log"
+
+	"github.com/bnb-chain/greenfield-common/redundancy"
 )
 
 // ComputerHash split the reader into segment, ec encode the data, compute the hash roots of pieces,

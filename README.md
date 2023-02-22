@@ -6,3 +6,5 @@
 1. Erasure encode/decode algorithm 
 
 2. Compute sha256 hash of file content
+
+3. Generate checksum and integrity hash

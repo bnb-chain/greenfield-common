@@ -1,44 +1,12 @@
-package redundancy
+package http
 
 import (
-	"crypto/sha256"
 	"encoding/hex"
-	"errors"
-	"io"
 	"net/http"
 	"regexp"
 	"strings"
 	"unicode/utf8"
 )
-
-// CalcSHA256Hex compute checksum of sha256 hash and encode it to hex
-func CalcSHA256Hex(buf []byte) (hexStr string) {
-	sum := CalcSHA256(buf)
-	hexStr = hex.EncodeToString(sum)
-	return
-}
-
-// CalcSHA256 compute checksum of sha256 from byte array
-func CalcSHA256(buf []byte) []byte {
-	h := sha256.New()
-	h.Write(buf)
-	sum := h.Sum(nil)
-	return sum[:]
-}
-
-// CalcSHA256HashByte compute checksum of sha256 from io.reader
-func CalcSHA256HashByte(body io.Reader) ([]byte, error) {
-	if body == nil {
-		return []byte(""), errors.New("body empty")
-	}
-	buf := make([]byte, 1024)
-	h := sha256.New()
-	if _, err := io.CopyBuffer(h, body, buf); err != nil {
-		return []byte(""), err
-	}
-	hash := h.Sum(nil)
-	return hash, nil
-}
 
 // EncodePath encode the strings from UTF-8 byte representations to HTML hex escape sequences
 func EncodePath(pathName string) string {
