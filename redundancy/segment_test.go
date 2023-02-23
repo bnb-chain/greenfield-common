@@ -19,7 +19,7 @@ func TestSegmentPieceEncode(t *testing.T) {
 
 	piecesObjects, err := EncodeSegment(segment)
 	if err != nil {
-		t.Errorf("segment encode fail")
+		t.Errorf("segment encode failed")
 	}
 
 	log.Print("encode result:")
@@ -40,18 +40,18 @@ func TestSegmentPieceEncode(t *testing.T) {
 	start := time.Now()
 	decodeSegment, err := DecodeSegment(shardsToRecover, int64(segmentSize))
 	if err != nil {
-		t.Errorf("segment Reconstruct fail")
+		t.Errorf("segment Reconstruct failed")
 	}
 
 	fmt.Printf("decode cost time: %d", time.Since(start).Milliseconds())
 	if !bytes.Equal(decodeSegment.Data, segmentData) {
-		t.Errorf("compare segment data fail")
+		t.Errorf("compare segment data failed")
 	}
 	if decodeSegment.SegmentID != segment.SegmentID {
-		t.Errorf("compare segment id fail ")
+		t.Errorf("compare segment id failed")
 	}
-	if decodeSegment.SegName != segment.SegName {
-		t.Errorf("compare segment name fail ")
+	if decodeSegment.SegmentName != segment.SegmentName {
+		t.Errorf("compare segment name failed")
 	}
 
 	// set 1 data block and 1 priority block as empty, decode should success
@@ -64,16 +64,16 @@ func TestSegmentPieceEncode(t *testing.T) {
 
 	decodeSegment, err = DecodeSegment(shardsToRecover, int64(segmentSize))
 	if err != nil {
-		t.Errorf("segment Reconstruct fail")
+		t.Errorf("segment Reconstruct failed")
 	}
 	if !bytes.Equal(decodeSegment.Data, segmentData) {
 		t.Errorf("compare fail")
 	}
 	if decodeSegment.SegmentID != segment.SegmentID {
-		t.Errorf("compare segment id fail ")
+		t.Errorf("compare segment id failed")
 	}
-	if decodeSegment.SegName != segment.SegName {
-		t.Errorf("compare segment name fail ")
+	if decodeSegment.SegmentName != segment.SegmentName {
+		t.Errorf("compare segment name failed")
 	}
 
 	// set 2 data block and 1 priority block as empty, decode should fail
@@ -96,7 +96,7 @@ func TestRawSegmentEncode(t *testing.T) {
 
 	piecesShards, err := EncodeRawSegment(segmentData, DataBlocks, ParityBlocks)
 	if err != nil {
-		t.Errorf("segment encode fail")
+		t.Errorf("segment encode failed")
 	}
 
 	// set 2 dataBlock of origin as empty block
@@ -110,14 +110,14 @@ func TestRawSegmentEncode(t *testing.T) {
 
 	deCodeBytes, err := DecodeRawSegment(shardsToRecover, int64(segmentSize), DataBlocks, ParityBlocks)
 	if err != nil {
-		t.Errorf("decode fail")
+		t.Errorf("decode failed")
 	} else {
-		log.Println("decode succ")
+		log.Println("decode successfully")
 	}
 
 	// compare decode data with original data
 	if !bytes.Equal(deCodeBytes, segmentData) {
-		t.Errorf("decode data error")
+		t.Errorf("decode data failed")
 	}
 
 	// set 2 data block and 1 priority block as empty, decode should fail

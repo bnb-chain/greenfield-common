@@ -19,7 +19,7 @@ type PieceObject struct {
 
 // Segment - detail of segment split from objects
 type Segment struct {
-	SegName     string
+	SegmentName string
 	SegmentSize int64
 	SegmentID   int
 	Data        []byte
@@ -30,38 +30,38 @@ const (
 	ParityBlocks int = 2
 )
 
-var defaultEcConfig = ECConfig{
+var defaultECConfig = ECConfig{
 	dataBlocks:   DataBlocks,
 	parityBlocks: ParityBlocks,
 }
 
 // NewSegment creates a new Segment object
-func NewSegment(size int64, content []byte, segmentId int, objectId string) *Segment {
+func NewSegment(size int64, content []byte, segmentID int, objectID string) *Segment {
 	return &Segment{
-		SegName:     objectId + "_s" + strconv.Itoa(segmentId),
+		SegmentName: objectID + "_s" + strconv.Itoa(segmentID),
 		SegmentSize: size,
-		SegmentID:   segmentId,
+		SegmentID:   segmentID,
 		Data:        content,
 	}
 }
 
 // EncodeSegment encode to segment, return the piece content and the meta of pieces
 func EncodeSegment(s *Segment) ([]*PieceObject, error) {
-	encoder, err := erasure.NewRSEncoder(defaultEcConfig.dataBlocks, defaultEcConfig.parityBlocks, s.SegmentSize)
+	encoder, err := erasure.NewRSEncoder(defaultECConfig.dataBlocks, defaultECConfig.parityBlocks, s.SegmentSize)
 	if err != nil {
 		log.Error().Msg("new RSEncoder fail" + err.Error())
 		return nil, err
 	}
 	shards, err := encoder.EncodeData(s.Data)
 	if err != nil {
-		log.Error().Msg("encode data fail :" + err.Error() + "segment name:" + s.SegName)
+		log.Error().Msg("encode data fail :" + err.Error() + "segment name:" + s.SegmentName)
 		return nil, err
 	}
 
 	pieceObjectList := make([]*PieceObject, DataBlocks+ParityBlocks)
 	for index, shard := range shards {
 		piece := &PieceObject{
-			Key:       s.SegName + "_p" + strconv.Itoa(index),
+			Key:       s.SegmentName + "_p" + strconv.Itoa(index),
 			ECdata:    shard,
 			ECIndex:   index,
 			PieceSize: len(shard),
@@ -74,18 +74,18 @@ func EncodeSegment(s *Segment) ([]*PieceObject, error) {
 
 // DecodeSegment decode with the pieceObjects and reconstruct the original segment
 func DecodeSegment(pieces []*PieceObject, segmentSize int64) (*Segment, error) {
-	encoder, err := erasure.NewRSEncoder(defaultEcConfig.dataBlocks, defaultEcConfig.parityBlocks, segmentSize)
+	encoder, err := erasure.NewRSEncoder(defaultECConfig.dataBlocks, defaultECConfig.parityBlocks, segmentSize)
 	if err != nil {
 		log.Error().Msg("new RSEncoder fail" + err.Error())
 		return nil, err
 	}
 
-	pieceObjectsData := make([][]byte, DataBlocks+ParityBlocks)
+	pieceObjectData := make([][]byte, DataBlocks+ParityBlocks)
 	for i := 0; i < DataBlocks+ParityBlocks; i++ {
-		pieceObjectsData[i] = pieces[i].ECdata
+		pieceObjectData[i] = pieces[i].ECdata
 	}
 
-	deCodeBytes, err := encoder.GetOriginalData(pieceObjectsData, segmentSize)
+	deCodeBytes, err := encoder.GetOriginalData(pieceObjectData, segmentSize)
 	if err != nil {
 		log.Error().Msg("reconstruct segment content fail:" + err.Error())
 		return nil, err
@@ -104,8 +104,8 @@ func DecodeSegment(pieces []*PieceObject, segmentSize int64) (*Segment, error) {
 	}
 
 	return &Segment{
+		SegmentName: pieceName[:ecIndex],
 		SegmentSize: segmentSize,
-		SegName:     pieceName[:ecIndex],
 		SegmentID:   segId,
 		Data:        deCodeBytes,
 	}, nil
@@ -113,12 +113,12 @@ func DecodeSegment(pieces []*PieceObject, segmentSize int64) (*Segment, error) {
 
 // EncodeRawSegment encode a raw byte array and return erasure encoded shards in orders
 func EncodeRawSegment(content []byte, dataShards, parityShards int) ([][]byte, error) {
-	erasure, err := erasure.NewRSEncoder(dataShards, parityShards, int64(len(content)))
+	encoder, err := erasure.NewRSEncoder(dataShards, parityShards, int64(len(content)))
 	if err != nil {
 		log.Error().Msg("new RSEncoder fail:" + err.Error())
 		return nil, err
 	}
-	shards, err := erasure.EncodeData(content)
+	shards, err := encoder.EncodeData(content)
 	if err != nil {
 		return nil, err
 	}
@@ -127,14 +127,14 @@ func EncodeRawSegment(content []byte, dataShards, parityShards int) ([][]byte, e
 
 // DecodeRawSegment decode the erasure encoded data and return original content
 // If the piece data has lost, need to pass an empty bytes array as one piece
-func DecodeRawSegment(piecesData [][]byte, segmentSize int64, dataShards, parityShards int) ([]byte, error) {
+func DecodeRawSegment(pieceData [][]byte, segmentSize int64, dataShards, parityShards int) ([]byte, error) {
 	encoder, err := erasure.NewRSEncoder(dataShards, parityShards, segmentSize)
 	if err != nil {
 		log.Error().Msg("new RSEncoder fail:" + err.Error())
 		return nil, err
 	}
 
-	deCodeBytes, err := encoder.GetOriginalData(piecesData, segmentSize)
+	deCodeBytes, err := encoder.GetOriginalData(pieceData, segmentSize)
 	if err != nil {
 		return nil, err
 	}

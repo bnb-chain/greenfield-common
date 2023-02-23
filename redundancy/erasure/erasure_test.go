@@ -14,10 +14,9 @@ const (
 
 func TestRSEncoder(t *testing.T) {
 	blockSize := 16 * 1024 * 1024
-
 	RSEncoderStorage, err := NewRSEncoder(dataShards, parityShards, int64(blockSize))
 	if err != nil {
-		t.Errorf("new RSEncoder fail")
+		t.Errorf("new RSEncoder failed")
 	}
 
 	// generate encode source data
@@ -29,7 +28,7 @@ func TestRSEncoder(t *testing.T) {
 
 	shards, err := RSEncoderStorage.EncodeData(originData)
 	if err != nil {
-		t.Errorf("encode fail")
+		t.Errorf("encode failed")
 	}
 	log.Println("encode successfully")
 
@@ -44,7 +43,7 @@ func TestRSEncoder(t *testing.T) {
 
 	err = RSEncoderStorage.DecodeDataShards(shardsToRecover)
 	if err != nil {
-		t.Errorf("decode fail")
+		t.Errorf("decode failed")
 	} else {
 		log.Println("decode successfully")
 	}
@@ -63,7 +62,7 @@ func TestRSEncoder(t *testing.T) {
 	}
 
 	if !bytes.Equal(deCodeBytes, originData) {
-		t.Errorf("decode data error")
+		t.Errorf("decode data failed")
 	}
 
 	// delete 2 dataBlock of origin
@@ -72,11 +71,11 @@ func TestRSEncoder(t *testing.T) {
 
 	deCodeContent, err := RSEncoderStorage.GetOriginalData(shardsToRecover, int64(len(originData)))
 	if err != nil {
-		t.Errorf("decode fail")
+		t.Errorf("decode failed")
 	}
 
 	if !bytes.Equal(deCodeContent, originData) {
-		t.Errorf("decode data error")
+		t.Errorf("decode data failed")
 	}
 
 	// set 2 priorityBlock of origin as empty block
@@ -84,11 +83,11 @@ func TestRSEncoder(t *testing.T) {
 	shardsToRecover[5] = nil
 	deCodeContent, err = RSEncoderStorage.GetOriginalData(shardsToRecover, int64(len(originData)))
 	if err != nil {
-		t.Errorf("decode fail")
+		t.Errorf("decode failed")
 	}
 
 	if !bytes.Equal(deCodeContent, originData) {
-		t.Errorf("decode data error")
+		t.Errorf("decode data failed")
 	}
 
 	// set 3 dataBlock of origin as empty block, decode should be fail
@@ -97,7 +96,7 @@ func TestRSEncoder(t *testing.T) {
 	shardsToRecover[2] = nil
 	err = RSEncoderStorage.DecodeDataShards(shardsToRecover)
 	if err == nil {
-		t.Errorf("decode should fail")
+		t.Errorf("decode should failed")
 	}
 
 }
