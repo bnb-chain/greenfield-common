@@ -1,4 +1,4 @@
-package redundancy
+package hash
 
 import (
 	"bytes"
@@ -7,6 +7,8 @@ import (
 	"sync"
 
 	"github.com/rs/zerolog/log"
+
+	"github.com/bnb-chain/greenfield-common/redundancy"
 )
 
 // ComputerHash split the reader into segment, ec encode the data, compute the hash roots of pieces,
@@ -23,7 +25,7 @@ func ComputerHash(reader io.Reader, segmentSize int64, dataShards, parityShards 
 		n, err := reader.Read(seg)
 		if err != nil {
 			if err != io.EOF {
-				log.Error().Msg("content read fail:" + err.Error())
+				log.Error().Msg("content read failed:" + err.Error())
 				return nil, 0, err
 			}
 			break
@@ -35,19 +37,17 @@ func ComputerHash(reader io.Reader, segmentSize int64, dataShards, parityShards 
 			if segmentReader != nil {
 				checksum, err := CalcSHA256HashByte(segmentReader)
 				if err != nil {
-					log.Error().Msg("compute checksum fail:" + err.Error())
+					log.Error().Msg("compute checksum failed:" + err.Error())
 					return nil, 0, err
 				}
 				segChecksumList = append(segChecksumList, checksum)
 			}
 
 			// get erasure encode bytes
-			encodeShards, err := EncodeRawSegment(seg[:n], dataShards, parityShards)
-
+			encodeShards, err := redundancy.EncodeRawSegment(seg[:n], dataShards, parityShards)
 			if err != nil {
 				return nil, 0, err
 			}
-
 			for index, shard := range encodeShards {
 				encodeData[index] = append(encodeData[index], shard)
 			}
@@ -82,7 +82,6 @@ func ComputerHash(reader io.Reader, segmentSize int64, dataShards, parityShards 
 	for i := 0; i < spLen; i++ {
 		result = append(result, hashList[i])
 	}
-
 	return result, contentLen, nil
 }
 

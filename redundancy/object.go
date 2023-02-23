@@ -3,7 +3,7 @@ package redundancy
 type RedundancyConfig struct {
 	BlockNumber  uint64
 	SegmentsSize uint64
-	ECcfg        ECConfig
+	ECCfg        ECConfig
 }
 
 type ECConfig struct {
@@ -18,9 +18,10 @@ type Object struct {
 	ObjectData []byte
 	// ObjectData ObjectPayloadReader
 }
+
 type ObjectInfo struct {
-	ID         uint64
-	objectName string
-	ObjectSize uint64
-	Redundancy RedundancyConfig
+	ID            uint64
+	ObjectName    string
+	ObjectSize    uint64
+	RedundancyCfg RedundancyConfig
 }

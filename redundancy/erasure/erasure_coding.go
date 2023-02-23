@@ -16,7 +16,7 @@ type RSEncoder struct {
 	blockSize                int64 // the data size to be encoded
 }
 
-// NewRSEncoder creates a new RSEncoder with reedsolomon encoder
+// NewRSEncoder creates a new RSEncoder with reed-solomon encoder
 func NewRSEncoder(dataShards, parityShards int, blockSize int64) (r RSEncoder, err error) {
 	// Check the parameters for sanity now.
 	if dataShards <= 0 || parityShards < 0 {
@@ -32,7 +32,6 @@ func NewRSEncoder(dataShards, parityShards int, blockSize int64) (r RSEncoder, e
 		parityShards: parityShards,
 		blockSize:    blockSize,
 	}
-
 	var encoder reedsolomon.Encoder
 	var once sync.Once
 	r.encoder = func() reedsolomon.Encoder {
@@ -47,11 +46,10 @@ func NewRSEncoder(dataShards, parityShards int, blockSize int64) (r RSEncoder, e
 		})
 		return encoder
 	}
-
 	return
 }
 
-// EncodeData encodes the given data and returns the reedsolomon encoded shards
+// EncodeData encodes the given data and returns the reed-solomon encoded shards
 func (r *RSEncoder) EncodeData(content []byte) ([][]byte, error) {
 	if len(content) == 0 {
 		return make([][]byte, r.dataShards+r.parityShards), nil
@@ -98,7 +96,7 @@ func (r *RSEncoder) DecodeShards(data [][]byte) error {
 	}
 
 	if !ok {
-		return fmt.Errorf("parity shards contained incorrect data.")
+		return fmt.Errorf("parity shards contained incorrect data")
 	}
 	return nil
 }
