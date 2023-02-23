@@ -6,8 +6,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/bnb-chain/greenfield-common/hash"
 	"github.com/ethereum/go-ethereum/crypto"
+
+	"github.com/bnb-chain/greenfield-common/hash"
 )
 
 var supportHeads = []string{
