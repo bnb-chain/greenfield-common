@@ -12,8 +12,8 @@ import (
 )
 
 var supportHeads = []string{
-	HTTPHeaderContentSHA256, HTTPHeaderTransactionHash, HTTPHeaderObjectId, HTTPHeaderRedundancyIndex, HTTPHeaderResource,
-	HTTPHeaderDate, HTTPHeaderRange, HTTPHeaderPieceIndex, HTTPHeaderContentType, HTTPHeaderContentMD5,
+	HTTPHeaderContentSHA256, HTTPHeaderTransactionHash, HTTPHeaderObjectID, HTTPHeaderRedundancyIndex, HTTPHeaderResource,
+	HTTPHeaderDate, HTTPHeaderRange, HTTPHeaderPieceIndex, HTTPHeaderContentType, HTTPHeaderContentMD5, HTTPHeaderUnsignedMsg,
 }
 
 // getCanonicalHeaders generate a list of request headers with their values
