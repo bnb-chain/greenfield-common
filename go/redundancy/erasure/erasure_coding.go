@@ -38,7 +38,6 @@ func NewRSEncoder(dataShards, parityShards int, blockSize int64) (r RSEncoder, e
 		once.Do(func() {
 			r, err := reedsolomon.New(dataShards, parityShards,
 				reedsolomon.WithAutoGoroutines(int(r.ShardSize())))
-
 			if err != nil {
 				log.Error().Msg("new RS encoder fail:" + err.Error())
 			}

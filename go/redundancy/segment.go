@@ -4,15 +4,15 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/bnb-chain/greenfield-common/redundancy/erasure"
-
 	"github.com/rs/zerolog/log"
+
+	"github.com/bnb-chain/greenfield-common/go/redundancy/erasure"
 )
 
 // PieceObject - details of the erasure encoded piece
 type PieceObject struct {
 	Key       string
-	ECdata    []byte
+	ECData    []byte
 	ECIndex   int
 	PieceSize int
 }
@@ -62,7 +62,7 @@ func EncodeSegment(s *Segment) ([]*PieceObject, error) {
 	for index, shard := range shards {
 		piece := &PieceObject{
 			Key:       s.SegmentName + "_p" + strconv.Itoa(index),
-			ECdata:    shard,
+			ECData:    shard,
 			ECIndex:   index,
 			PieceSize: len(shard),
 		}
@@ -82,7 +82,7 @@ func DecodeSegment(pieces []*PieceObject, segmentSize int64) (*Segment, error) {
 
 	pieceObjectData := make([][]byte, DataBlocks+ParityBlocks)
 	for i := 0; i < DataBlocks+ParityBlocks; i++ {
-		pieceObjectData[i] = pieces[i].ECdata
+		pieceObjectData[i] = pieces[i].ECData
 	}
 
 	deCodeBytes, err := encoder.GetOriginalData(pieceObjectData, segmentSize)
@@ -96,8 +96,8 @@ func DecodeSegment(pieces []*PieceObject, segmentSize int64) (*Segment, error) {
 	segIndex := strings.Index(pieceName, "_s")
 	ecIndex := strings.Index(pieceName, "_p")
 
-	segIdStr := pieceName[segIndex+2 : ecIndex]
-	segId, err := strconv.Atoi(segIdStr)
+	segIDStr := pieceName[segIndex+2 : ecIndex]
+	segID, err := strconv.Atoi(segIDStr)
 	if err != nil {
 		log.Error().Msg("fetch segment ID fail: " + err.Error())
 		return nil, err
@@ -106,7 +106,7 @@ func DecodeSegment(pieces []*PieceObject, segmentSize int64) (*Segment, error) {
 	return &Segment{
 		SegmentName: pieceName[:ecIndex],
 		SegmentSize: segmentSize,
-		SegmentID:   segId,
+		SegmentID:   segID,
 		Data:        deCodeBytes,
 	}, nil
 }

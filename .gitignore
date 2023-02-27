@@ -6,7 +6,6 @@
 *.dylib
 *.pb.go
 build/
-.storage_provider_cli_history
 
 # OSX trash
 .DS_Store
