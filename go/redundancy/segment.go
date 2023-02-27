@@ -96,8 +96,8 @@ func DecodeSegment(pieces []*PieceObject, segmentSize int64) (*Segment, error) {
 	segIndex := strings.Index(pieceName, "_s")
 	ecIndex := strings.Index(pieceName, "_p")
 
-	segIdStr := pieceName[segIndex+2 : ecIndex]
-	segId, err := strconv.Atoi(segIdStr)
+	segIDStr := pieceName[segIndex+2 : ecIndex]
+	segID, err := strconv.Atoi(segIDStr)
 	if err != nil {
 		log.Error().Msg("fetch segment ID fail: " + err.Error())
 		return nil, err
@@ -106,7 +106,7 @@ func DecodeSegment(pieces []*PieceObject, segmentSize int64) (*Segment, error) {
 	return &Segment{
 		SegmentName: pieceName[:ecIndex],
 		SegmentSize: segmentSize,
-		SegmentID:   segId,
+		SegmentID:   segID,
 		Data:        deCodeBytes,
 	}, nil
 }

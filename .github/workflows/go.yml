@@ -67,9 +67,9 @@ jobs:
       - name: Run coverage
         working-directory: ./go
         run: go test -race -coverprofile=coverage.txt -covermode=atomic ./...
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          files: go/coverage.txt
-          flags: go
-          fail_ci_if_error: true
+#      - name: Upload coverage to Codecov
+#        uses: codecov/codecov-action@v3
+#        with:
+#          files: go/coverage.txt
+#          flags: go
+#          fail_ci_if_error: true

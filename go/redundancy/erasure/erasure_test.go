@@ -98,5 +98,4 @@ func TestRSEncoder(t *testing.T) {
 	if err == nil {
 		t.Errorf("decode should failed")
 	}
-
 }

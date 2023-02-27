@@ -18,7 +18,7 @@ func CalcSHA256(buf []byte) []byte {
 	h := sha256.New()
 	h.Write(buf)
 	sum := h.Sum(nil)
-	return sum[:]
+	return sum
 }
 
 // CalcSHA256HashByte compute checksum of sha256 from io.reader

@@ -60,7 +60,7 @@ func ComputerHash(reader io.Reader, segmentSize int64, dataShards, parityShards 
 	result = append(result, segmentRootHash)
 
 	// compute the hash root of pieces of the SecondarySP
-	var wg = &sync.WaitGroup{}
+	wg := &sync.WaitGroup{}
 	spLen := len(encodeData)
 	wg.Add(spLen)
 	hashList := make([]string, spLen)
