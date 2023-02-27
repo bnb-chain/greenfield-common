@@ -4,15 +4,15 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/bnb-chain/greenfield-common/redundancy/erasure"
-
 	"github.com/rs/zerolog/log"
+
+	"github.com/bnb-chain/greenfield-common/go/redundancy/erasure"
 )
 
 // PieceObject - details of the erasure encoded piece
 type PieceObject struct {
 	Key       string
-	ECdata    []byte
+	ECData    []byte
 	ECIndex   int
 	PieceSize int
 }
@@ -62,7 +62,7 @@ func EncodeSegment(s *Segment) ([]*PieceObject, error) {
 	for index, shard := range shards {
 		piece := &PieceObject{
 			Key:       s.SegmentName + "_p" + strconv.Itoa(index),
-			ECdata:    shard,
+			ECData:    shard,
 			ECIndex:   index,
 			PieceSize: len(shard),
 		}
@@ -82,7 +82,7 @@ func DecodeSegment(pieces []*PieceObject, segmentSize int64) (*Segment, error) {
 
 	pieceObjectData := make([][]byte, DataBlocks+ParityBlocks)
 	for i := 0; i < DataBlocks+ParityBlocks; i++ {
-		pieceObjectData[i] = pieces[i].ECdata
+		pieceObjectData[i] = pieces[i].ECData
 	}
 
 	deCodeBytes, err := encoder.GetOriginalData(pieceObjectData, segmentSize)

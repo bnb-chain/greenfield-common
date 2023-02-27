@@ -8,7 +8,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/crypto"
 
-	"github.com/bnb-chain/greenfield-common/hash"
+	"github.com/bnb-chain/greenfield-common/go/hash"
 )
 
 var supportHeads = []string{

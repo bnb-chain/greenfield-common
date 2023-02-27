@@ -8,7 +8,7 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	"github.com/bnb-chain/greenfield-common/redundancy"
+	"github.com/bnb-chain/greenfield-common/go/redundancy"
 )
 
 // ComputerHash split the reader into segment, ec encode the data, compute the hash roots of pieces,

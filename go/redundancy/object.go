@@ -1,9 +1,9 @@
 package redundancy
 
 type RedundancyConfig struct {
-	BlockNumber  uint64
-	SegmentsSize uint64
-	ECCfg        ECConfig
+	BlockNumber uint64
+	SegmentSize uint64
+	ECCfg       ECConfig
 }
 
 type ECConfig struct {
