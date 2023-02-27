@@ -97,3 +97,9 @@ func ComputerHashFromFile(filePath string, segmentSize int64, dataShards, parity
 
 	return ComputerHash(f, segmentSize, dataShards, parityShards)
 }
+
+// ComputerHashFromBuffer support compute hash from byte buffer
+func ComputerHashFromBuffer(content []byte, segmentSize int64, dataShards, parityShards int) ([]string, int64, error) {
+	reader := bytes.NewReader(content)
+	return ComputerHash(reader, segmentSize, dataShards, parityShards)
+}
