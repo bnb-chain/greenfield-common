@@ -11,8 +11,8 @@ import (
 	"github.com/bnb-chain/greenfield-common/go/redundancy"
 )
 
-// ComputerHash split the reader into segment, ec encode the data, compute the hash roots of pieces,
-// and return the hash result array list and data size
+// ComputerHash split the reader into segment, ec encode the data, compute the hash roots of pieces
+// return the hash result array list and data size
 func ComputerHash(reader io.Reader, segmentSize int64, dataShards, parityShards int) ([]string, int64, error) {
 	var segChecksumList [][]byte
 	var result []string
