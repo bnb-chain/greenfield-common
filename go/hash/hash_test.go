@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	segmentSize = 16 * 1024 * 1024
+	segmentSize = 16 * 10
 )
 
 func TestHash(t *testing.T) {
@@ -50,6 +50,36 @@ func TestHash(t *testing.T) {
 	}
 }
 
+func TestHash2(t *testing.T) {
+	length := int64(17 * 10)
+	contentToHash := createTestData2(length)
+
+	stringReader1 := strings.NewReader(contentToHash)
+	stringReader2 := strings.NewReader(contentToHash)
+	hashResult, _, err := ComputerHash(stringReader1, int64(segmentSize), redundancy.DataBlocks, redundancy.ParityBlocks)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	for idx, hash := range hashResult {
+		fmt.Println("hash", idx, "：", hash)
+	}
+
+	_, _, _ = ComputerHashNoParallel2(stringReader2, int64(segmentSize), redundancy.DataBlocks, redundancy.ParityBlocks)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	hashResult2, _, err := ComputerHashNoParallel(stringReader2, int64(segmentSize), redundancy.DataBlocks, redundancy.ParityBlocks)
+
+	for idx, hash := range hashResult2 {
+		if hash != hashResult[idx] {
+			t.Errorf("compare hash error")
+		}
+	}
+
+}
+
 func createTestData(size int64) *strings.Reader {
 	const letterBytes = "abcdefghijklmnopqrstuvwxyz"
 	buf := make([]byte, size)
@@ -58,4 +88,14 @@ func createTestData(size int64) *strings.Reader {
 	}
 	r := strings.NewReader(string(buf))
 	return r
+}
+
+func createTestData2(size int64) string {
+	const letterBytes = "abcdefghijklmnopqrstuvwxyz"
+	buf := make([]byte, size)
+	for i := range buf {
+		buf[i] = letterBytes[rand.Intn(len(letterBytes))]
+	}
+
+	return string(buf)
 }
