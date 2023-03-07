@@ -6,22 +6,26 @@ import (
 	"os"
 	"sync"
 
-	"github.com/rs/zerolog/log"
-
 	"github.com/bnb-chain/greenfield-common/go/redundancy"
+	"github.com/rs/zerolog/log"
 )
 
 // ComputerHash split the reader into segment, ec encode the data, compute the hash roots of pieces
 // return the hash result array list and data size
-func ComputerHash(reader io.Reader, segmentSize int64, dataShards, parityShards int) ([]string, int64, error) {
+func ComputerHash(reader io.Reader, segmentSize int64, dataShards, parityShards int) ([][]byte, int64, error) {
 	var segChecksumList [][]byte
-	var result []string
-	encodeData := make([][][]byte, dataShards+parityShards)
-	seg := make([]byte, segmentSize)
+	var result [][]byte
+	ecShards := dataShards + parityShards
+	encodeData := make([][][]byte, ecShards)
+
+	for i := 0; i < ecShards; i++ {
+		encodeData[i] = make([][]byte, 0)
+	}
 
 	contentLen := int64(0)
 	// read the data by segment size
 	for {
+		seg := make([]byte, segmentSize)
 		n, err := reader.Read(seg)
 		if err != nil {
 			if err != io.EOF {
@@ -42,12 +46,13 @@ func ComputerHash(reader io.Reader, segmentSize int64, dataShards, parityShards 
 				}
 				segChecksumList = append(segChecksumList, checksum)
 			}
-
+			data := seg[:n]
 			// get erasure encode bytes
-			encodeShards, err := redundancy.EncodeRawSegment(seg[:n], dataShards, parityShards)
+			encodeShards, err := redundancy.EncodeRawSegment(data, dataShards, parityShards)
 			if err != nil {
 				return nil, 0, err
 			}
+
 			for index, shard := range encodeShards {
 				encodeData[index] = append(encodeData[index], shard)
 			}
@@ -55,15 +60,14 @@ func ComputerHash(reader io.Reader, segmentSize int64, dataShards, parityShards 
 	}
 
 	// combine the hash root of pieces of the PrimarySP
-	segBytesTotal := bytes.Join(segChecksumList, []byte(""))
-	segmentRootHash := CalcSHA256Hex(segBytesTotal)
+	segmentRootHash := GenerateIntegrityHash(segChecksumList)
 	result = append(result, segmentRootHash)
 
 	// compute the hash root of pieces of the SecondarySP
 	wg := &sync.WaitGroup{}
 	spLen := len(encodeData)
 	wg.Add(spLen)
-	hashList := make([]string, spLen)
+	hashList := make([][]byte, spLen)
 	for spID, content := range encodeData {
 		go func(data [][]byte, id int) {
 			defer wg.Done()
@@ -73,10 +77,10 @@ func ComputerHash(reader io.Reader, segmentSize int64, dataShards, parityShards 
 				checksumList = append(checksumList, piecesHash)
 			}
 
-			piecesBytesTotal := bytes.Join(checksumList, []byte(""))
-			hashList[id] = CalcSHA256Hex(piecesBytesTotal)
+			hashList[id] = GenerateIntegrityHash(checksumList)
 		}(content, spID)
 	}
+
 	wg.Wait()
 
 	for i := 0; i < spLen; i++ {
@@ -86,7 +90,7 @@ func ComputerHash(reader io.Reader, segmentSize int64, dataShards, parityShards 
 }
 
 // ComputerHashFromFile open a local file and compute hash result
-func ComputerHashFromFile(filePath string, segmentSize int64, dataShards, parityShards int) ([]string, int64, error) {
+func ComputerHashFromFile(filePath string, segmentSize int64, dataShards, parityShards int) ([][]byte, int64, error) {
 	f, err := os.Open(filePath)
 	// If any error fail quickly here.
 	if err != nil {
