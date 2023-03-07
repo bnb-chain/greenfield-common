@@ -33,8 +33,9 @@ func TestHash(t *testing.T) {
 	if len(hashResult) != redundancy.DataBlocks+redundancy.ParityBlocks+1 {
 		t.Errorf("compute hash num not right")
 	}
+
 	for _, hash := range hashResult {
-		if len(hash) != 64 {
+		if len(hash) != 32 {
 			t.Errorf("hash length not right")
 		}
 	}
@@ -44,7 +45,7 @@ func TestHash(t *testing.T) {
 		t.Errorf("compute hash num not right")
 	}
 	for _, hash := range hashResult {
-		if len(hash) != 64 {
+		if len(hash) != 32 {
 			t.Errorf("hash length not right")
 		}
 	}
