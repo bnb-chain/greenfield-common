@@ -1,6 +1,8 @@
 package hash
 
 import (
+	"bytes"
+	"encoding/base64"
 	"fmt"
 	"math/rand"
 	"strings"
@@ -33,8 +35,9 @@ func TestHash(t *testing.T) {
 	if len(hashResult) != redundancy.DataBlocks+redundancy.ParityBlocks+1 {
 		t.Errorf("compute hash num not right")
 	}
+
 	for _, hash := range hashResult {
-		if len(hash) != 64 {
+		if len(hash) != 32 {
 			t.Errorf("hash length not right")
 		}
 	}
@@ -44,10 +47,42 @@ func TestHash(t *testing.T) {
 		t.Errorf("compute hash num not right")
 	}
 	for _, hash := range hashResult {
-		if len(hash) != 64 {
+		if len(hash) != 32 {
 			t.Errorf("hash length not right")
 		}
 	}
+}
+
+func TestHashResult(t *testing.T) {
+	var buffer bytes.Buffer
+	line := `1234567890,1234567890,1234567890,1234567890,1234567890,1234567890,1234567890,1234567890,1234567890`
+
+	// generate 98 buffer
+	for i := 0; i < 1024*1024; i++ {
+		buffer.WriteString(fmt.Sprintf("[%05d] %s\n", i, line))
+	}
+	hashList, _, err := ComputerHash(bytes.NewReader(buffer.Bytes()), int64(segmentSize), redundancy.DataBlocks, redundancy.ParityBlocks)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	// this is generated from sp side
+	expectedHashList := []string{
+		"6YA/kt2H0pS6+/tyR20LCqqeWmNCelS4wQcEUIhnAko=",
+		"C00Wks+pfo6NBQkG8iRGN5M0EtTvUAwMyaQ8+RsG4rA=",
+		"Z5AW9CvNIsDo9jtxeQysSpn2ayNml3Kr4ksm/2WUu8s=",
+		"dMlsKDw2dGRUygEgkyHJvOHYn9jVtycpUb7zvIGvEEk=",
+		"v7vNLlbIg+27zFAOYfT2UDkoAId53Z1gDkcTA7VWT5A=",
+		"1b7QsyQ8QT+7UoMU7K1SRhKOfIylogIfrSFsKJUfi4U=",
+		"/7A2gwAnaJ5jFuK6sbov6iFAkhfOga4wdAK/NlCuJBo=",
+	}
+
+	for id, hash := range hashList {
+		if base64.StdEncoding.EncodeToString(hash) != expectedHashList[id] {
+			t.Errorf("compare hash error")
+		}
+	}
+
 }
 
 func createTestData(size int64) *strings.Reader {
