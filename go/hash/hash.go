@@ -1,7 +1,6 @@
 package hash
 
 import (
-	"bytes"
 	"io"
 	"os"
 	"sync"
@@ -36,17 +35,10 @@ func ComputerHash(reader io.Reader, segmentSize int64, dataShards, parityShards 
 		}
 		if n > 0 {
 			contentLen += int64(n)
-			// compute segment hash
-			segmentReader := bytes.NewReader(seg[:n])
-			if segmentReader != nil {
-				checksum, err := CalcSHA256HashByte(segmentReader)
-				if err != nil {
-					log.Error().Msg("compute checksum failed:" + err.Error())
-					return nil, 0, err
-				}
-				segChecksumList = append(segChecksumList, checksum)
-			}
 			data := seg[:n]
+			// compute segment hash
+			checksum := GenerateChecksum(data)
+			segChecksumList = append(segChecksumList, checksum)
 			// get erasure encode bytes
 			encodeShards, err := redundancy.EncodeRawSegment(data, dataShards, parityShards)
 			if err != nil {
@@ -73,7 +65,7 @@ func ComputerHash(reader io.Reader, segmentSize int64, dataShards, parityShards 
 			defer wg.Done()
 			var checksumList [][]byte
 			for _, pieces := range data {
-				piecesHash := CalcSHA256(pieces)
+				piecesHash := GenerateChecksum(pieces)
 				checksumList = append(checksumList, piecesHash)
 			}
 
