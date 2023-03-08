@@ -2,9 +2,7 @@ package hash
 
 import (
 	"bytes"
-	"crypto/md5"
 	"encoding/base64"
-	"encoding/hex"
 	"fmt"
 	"math/rand"
 	"strings"
@@ -57,9 +55,10 @@ func TestHash(t *testing.T) {
 
 func TestHashResult(t *testing.T) {
 	var buffer bytes.Buffer
-	line := `1234567890,1234567890,1234567890,1234567890,1234567890,1234567890,1234567890,1234567890,1234567890,11`
-	// generate 100M+ buffer
-	for i := 0; i < 1024*1000; i++ {
+	line := `1234567890,1234567890,1234567890,1234567890,1234567890,1234567890,1234567890,1234567890,1234567890`
+
+	// generate 98 buffer
+	for i := 0; i < 1024*1024; i++ {
 		buffer.WriteString(fmt.Sprintf("[%05d] %s\n", i, line))
 	}
 	hashList, _, err := ComputerHash(bytes.NewReader(buffer.Bytes()), int64(segmentSize), redundancy.DataBlocks, redundancy.ParityBlocks)
@@ -69,12 +68,13 @@ func TestHashResult(t *testing.T) {
 
 	// this is generated from sp side
 	expectedHashList := []string{
-		"dhmPA471pRuKF95ln9VWEqpwtN8BanO+FhRbdIy0sM0=",
-		"8mDetlm/ecGcNOcE5C7qsVsqp7S1eeB7wrRVF9nv32A=",
-		"b8OEwaDv9D4joBOfLxtBFD2+GS5ut+HxvGCpkz6SymY=",
-		"xh5A6s5pbC7/CbPjStIrlTSRRzl+kibWh+UJ5Xrtvm8=",
-		"AzWZNSOqQfPI0Ti84imcNCfNpkUQ41qICjyYmPvn9xY=",
-		"J2ekM038/tQMO5T6Zcf5JlpbXKkym6P9AdH6ozi0Wa0=",
+		"6YA/kt2H0pS6+/tyR20LCqqeWmNCelS4wQcEUIhnAko=",
+		"C00Wks+pfo6NBQkG8iRGN5M0EtTvUAwMyaQ8+RsG4rA=",
+		"Z5AW9CvNIsDo9jtxeQysSpn2ayNml3Kr4ksm/2WUu8s=",
+		"dMlsKDw2dGRUygEgkyHJvOHYn9jVtycpUb7zvIGvEEk=",
+		"v7vNLlbIg+27zFAOYfT2UDkoAId53Z1gDkcTA7VWT5A=",
+		"1b7QsyQ8QT+7UoMU7K1SRhKOfIylogIfrSFsKJUfi4U=",
+		"/7A2gwAnaJ5jFuK6sbov6iFAkhfOga4wdAK/NlCuJBo=",
 	}
 
 	for id, hash := range hashList {
@@ -93,9 +93,4 @@ func createTestData(size int64) *strings.Reader {
 	}
 	r := strings.NewReader(string(buf))
 	return r
-}
-
-func GetMD5Hash(text string) string {
-	hash := md5.Sum([]byte(text))
-	return hex.EncodeToString(hash[:])
 }
