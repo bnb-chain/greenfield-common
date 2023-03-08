@@ -1,6 +1,7 @@
 package hash
 
 import (
+	"bytes"
 	"io"
 	"os"
 	"sync"
@@ -92,4 +93,10 @@ func ComputerHashFromFile(filePath string, segmentSize int64, dataShards, parity
 	defer f.Close()
 
 	return ComputerHash(f, segmentSize, dataShards, parityShards)
+}
+
+// ComputerHashFromBuffer support compute hash from byte buffer
+func ComputerHashFromBuffer(content []byte, segmentSize int64, dataShards, parityShards int) ([][]byte, int64, error) {
+	reader := bytes.NewReader(content)
+	return ComputerHash(reader, segmentSize, dataShards, parityShards)
 }
