@@ -38,7 +38,7 @@ func TestHash(t *testing.T) {
 	}
 
 	for _, hash := range hashResult {
-		if len(hash) != expectedHashBytesLen {
+		if len(hash) != 32 {
 			t.Errorf("hash length not right")
 		}
 	}
@@ -48,7 +48,7 @@ func TestHash(t *testing.T) {
 		t.Errorf("compute hash num not right")
 	}
 	for _, hash := range hashResult {
-		if len(hash) != expectedHashBytesLen {
+		if len(hash) != 32 {
 			t.Errorf("hash length not right")
 		}
 	}
@@ -62,7 +62,7 @@ func TestHashResult(t *testing.T) {
 	for i := 0; i < 1024*1024; i++ {
 		buffer.WriteString(fmt.Sprintf("[%05d] %s\n", i, line))
 	}
-	hashList, _, err := ComputeIntegrityHash(bytes.NewReader(buffer.Bytes()), int64(segmentSize), redundancy.DataBlocks, redundancy.ParityBlocks)
+	hashList, _, err := ComputerHash(bytes.NewReader(buffer.Bytes()), int64(segmentSize), redundancy.DataBlocks, redundancy.ParityBlocks)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
