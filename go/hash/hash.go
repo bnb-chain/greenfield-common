@@ -10,18 +10,18 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// ComputerHash split the reader into segment, ec encode the data, compute the hash roots of pieces
+// ComputeIntegrityHash split the reader into segment, ec encode the data, compute the hash roots of pieces
 // return the hash result array list and data size
-func ComputerHash(reader io.Reader, segmentSize int64, dataShards, parityShards int) ([][]byte, int64, error) {
+func ComputeIntegrityHash(reader io.Reader, segmentSize int64, dataShards, parityShards int) ([][]byte, int64, error) {
 	var segChecksumList [][]byte
-	var result [][]byte
 	ecShards := dataShards + parityShards
-	encodeData := make([][][]byte, ecShards)
 
+	encodeData := make([][][]byte, ecShards)
 	for i := 0; i < ecShards; i++ {
 		encodeData[i] = make([][]byte, 0)
 	}
 
+	hashList := make([][]byte, ecShards+1)
 	contentLen := int64(0)
 	// read the data by segment size
 	for {
@@ -34,7 +34,8 @@ func ComputerHash(reader io.Reader, segmentSize int64, dataShards, parityShards 
 			}
 			break
 		}
-		if n > 0 {
+
+		if n > 0 && n <= int(segmentSize) {
 			contentLen += int64(n)
 			data := seg[:n]
 			// compute segment hash
@@ -53,14 +54,12 @@ func ComputerHash(reader io.Reader, segmentSize int64, dataShards, parityShards 
 	}
 
 	// combine the hash root of pieces of the PrimarySP
-	segmentRootHash := GenerateIntegrityHash(segChecksumList)
-	result = append(result, segmentRootHash)
+	hashList[0] = GenerateIntegrityHash(segChecksumList)
 
 	// compute the hash root of pieces of the SecondarySP
 	wg := &sync.WaitGroup{}
 	spLen := len(encodeData)
 	wg.Add(spLen)
-	hashList := make([][]byte, spLen)
 	for spID, content := range encodeData {
 		go func(data [][]byte, id int) {
 			defer wg.Done()
@@ -70,16 +69,13 @@ func ComputerHash(reader io.Reader, segmentSize int64, dataShards, parityShards 
 				checksumList = append(checksumList, piecesHash)
 			}
 
-			hashList[id] = GenerateIntegrityHash(checksumList)
+			hashList[id+1] = GenerateIntegrityHash(checksumList)
 		}(content, spID)
 	}
 
 	wg.Wait()
 
-	for i := 0; i < spLen; i++ {
-		result = append(result, hashList[i])
-	}
-	return result, contentLen, nil
+	return hashList, contentLen, nil
 }
 
 // ComputerHashFromFile open a local file and compute hash result
@@ -92,11 +88,11 @@ func ComputerHashFromFile(filePath string, segmentSize int64, dataShards, parity
 	}
 	defer f.Close()
 
-	return ComputerHash(f, segmentSize, dataShards, parityShards)
+	return ComputeIntegrityHash(f, segmentSize, dataShards, parityShards)
 }
 
 // ComputerHashFromBuffer support compute hash from byte buffer
 func ComputerHashFromBuffer(content []byte, segmentSize int64, dataShards, parityShards int) ([][]byte, int64, error) {
 	reader := bytes.NewReader(content)
-	return ComputerHash(reader, segmentSize, dataShards, parityShards)
+	return ComputeIntegrityHash(reader, segmentSize, dataShards, parityShards)
 }
