@@ -86,7 +86,7 @@ func GetCanonicalRequest(req *http.Request, supportHeaders map[string]struct{}) 
 // GetMsgToSign generate the msg bytes from canonicalRequest to sign
 func GetMsgToSign(req *http.Request) []byte {
 	headers := initSupportHeaders()
-	signBytes := hash.CalcSHA256([]byte(GetCanonicalRequest(req, headers)))
+	signBytes := hash.GenerateChecksum([]byte(GetCanonicalRequest(req, headers)))
 	return crypto.Keccak256(signBytes)
 }
 
