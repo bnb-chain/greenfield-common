@@ -15,7 +15,8 @@ import (
 )
 
 const (
-	segmentSize = 16 * 1024 * 1024
+	segmentSize          = 16 * 1024 * 1024
+	expectedHashBytesLen = 32
 )
 
 func TestHash(t *testing.T) {
@@ -23,7 +24,7 @@ func TestHash(t *testing.T) {
 	contentToHash := createTestData(length)
 	start := time.Now()
 
-	hashResult, size, err := ComputerHash(contentToHash, int64(segmentSize), redundancy.DataBlocks, redundancy.ParityBlocks)
+	hashResult, size, err := ComputeIntegrityHash(contentToHash, int64(segmentSize), redundancy.DataBlocks, redundancy.ParityBlocks)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -61,7 +62,7 @@ func TestHashResult(t *testing.T) {
 	for i := 0; i < 1024*1024; i++ {
 		buffer.WriteString(fmt.Sprintf("[%05d] %s\n", i, line))
 	}
-	hashList, _, err := ComputerHash(bytes.NewReader(buffer.Bytes()), int64(segmentSize), redundancy.DataBlocks, redundancy.ParityBlocks)
+	hashList, _, err := ComputeIntegrityHash(bytes.NewReader(buffer.Bytes()), int64(segmentSize), redundancy.DataBlocks, redundancy.ParityBlocks)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
