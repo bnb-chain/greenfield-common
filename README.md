@@ -1,6 +1,12 @@
 # greenfield-common
 Support common libs for different repos of greenfield
 
+
+## Disclaimer
+**The software and related documentation are under active development, all subject to potential future change without
+notification and not ready for production use. The code and security audit have not been fully completed and not ready
+for any bug bounty. We advise you to be careful and experiment on the network at your own risk. Stay safe out there.**
+
 ## Supported Common Functions
 
 ### 1. Erasure encode/decode algorithm 
@@ -9,7 +15,7 @@ Support common libs for different repos of greenfield
 
 ```go
 // first step, create a new rs encoder, the blockSize indicate the data size to be encoded
-func NewRSEncoder(dataShards, parityShards int, blockSize int64) (r RSEncoder, err error) {
+func NewRSEncoder(dataShards, parityShards int, blockSize int64) (r RSEncoder, err error) 
 // encode data and return the encoded shard number
 func (r *RSEncoder) EncodeData(content []byte) ([][]byte, error) 
 // decode the input data and reconstruct the data shards data (not include the parity shards).
