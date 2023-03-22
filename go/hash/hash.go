@@ -78,10 +78,9 @@ func ComputeIntegrityHash(reader io.Reader, segmentSize int64, dataShards, parit
 	return hashList, contentLen, nil
 }
 
-// ComputerHashFromFile open a local file and compute hash result
+// ComputerHashFromFile open a local file and compute hash result and data size
 func ComputerHashFromFile(filePath string, segmentSize int64, dataShards, parityShards int) ([][]byte, int64, error) {
 	f, err := os.Open(filePath)
-	// If any error fail quickly here.
 	if err != nil {
 		log.Error().Msg("open file fail:" + err.Error())
 		return nil, 0, err
@@ -91,7 +90,7 @@ func ComputerHashFromFile(filePath string, segmentSize int64, dataShards, parity
 	return ComputeIntegrityHash(f, segmentSize, dataShards, parityShards)
 }
 
-// ComputerHashFromBuffer support compute hash from byte buffer
+// ComputerHashFromBuffer support computing hash and size from byte buffer
 func ComputerHashFromBuffer(content []byte, segmentSize int64, dataShards, parityShards int) ([][]byte, int64, error) {
 	reader := bytes.NewReader(content)
 	return ComputeIntegrityHash(reader, segmentSize, dataShards, parityShards)
