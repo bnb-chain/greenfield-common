@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/bnb-chain/greenfield/x/storage/types"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/bnb-chain/greenfield-common/go/redundancy"
@@ -24,7 +25,7 @@ func TestHash(t *testing.T) {
 	contentToHash := createTestData(length)
 	start := time.Now()
 
-	hashResult, size, err := ComputeIntegrityHash(contentToHash, int64(segmentSize), redundancy.DataBlocks, redundancy.ParityBlocks)
+	hashResult, size, redundnacyType, err := ComputeIntegrityHash(contentToHash, int64(segmentSize), redundancy.DataBlocks, redundancy.ParityBlocks)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -32,17 +33,20 @@ func TestHash(t *testing.T) {
 	if size != length {
 		t.Errorf("compute size error")
 	}
+	if redundnacyType != types.REDUNDANCY_EC_TYPE {
+		t.Errorf("compare  redundnacy type error")
+	}
 
 	if len(hashResult) != redundancy.DataBlocks+redundancy.ParityBlocks+1 {
 		t.Errorf("compute hash num not right")
 	}
 
 	for _, hash := range hashResult {
-		if len(hash) != 32 {
+		if len(hash) != expectedHashBytesLen {
 			t.Errorf("hash length not right")
 		}
 	}
-	hashList, _, err := ComputerHashFromFile("hash.go", int64(segmentSize), redundancy.DataBlocks, redundancy.ParityBlocks)
+	hashList, _, _, err := ComputerHashFromFile("hash.go", int64(segmentSize), redundancy.DataBlocks, redundancy.ParityBlocks)
 	assert.Nil(t, err)
 	if len(hashList) != redundancy.DataBlocks+redundancy.ParityBlocks+1 {
 		t.Errorf("compute hash num not right")
@@ -62,7 +66,7 @@ func TestHashResult(t *testing.T) {
 	for i := 0; i < 1024*1024; i++ {
 		buffer.WriteString(fmt.Sprintf("[%05d] %s\n", i, line))
 	}
-	hashList, _, err := ComputeIntegrityHash(bytes.NewReader(buffer.Bytes()), int64(segmentSize), redundancy.DataBlocks, redundancy.ParityBlocks)
+	hashList, _, _, err := ComputeIntegrityHash(bytes.NewReader(buffer.Bytes()), int64(segmentSize), redundancy.DataBlocks, redundancy.ParityBlocks)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
