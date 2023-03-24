@@ -13,4 +13,6 @@ const (
 	HTTPHeaderDate          = "X-Gnfd-Date"
 	HTTPHeaderRange         = "Range"
 	HTTPHeaderContentSHA256 = "X-Gnfd-Content-Sha256"
+
+	HTTPHeaderUserAddress = "X-Gnfd-User-Address"
 )
