@@ -11,6 +11,10 @@ on:
 permissions:
   contents: read
 
+env:
+  GOPRIVATE: github.com/bnb-chain
+  GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_SECRET }}
+
 concurrency:
   group: go-ci-${{ github.ref }}
   cancel-in-progress: true
@@ -23,9 +27,6 @@ jobs:
         os: [ ubuntu-latest ]
     name: Golang Code Lint
     runs-on: ${{ matrix.os }}
-    env:
-      GOPRIVATE: github.com/bnb-chain
-      GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_SECRET }}
     steps:
       - uses: actions/setup-go@v3
         with:
@@ -53,6 +54,8 @@ jobs:
       GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_SECRET }}
     steps:
       - uses: actions/checkout@v3
+      - name: Setup GitHub Token
+        run: git config --global url.https://$GH_ACCESS_TOKEN@github.com/.insteadOf https://github.com/
       - uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go-version }}
