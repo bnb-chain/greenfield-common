@@ -6,13 +6,15 @@ import (
 	"os"
 	"sync"
 
-	"github.com/bnb-chain/greenfield-common/go/redundancy"
+	storageTypes "github.com/bnb-chain/greenfield/x/storage/types"
 	"github.com/rs/zerolog/log"
+
+	"github.com/bnb-chain/greenfield-common/go/redundancy"
 )
 
 // ComputeIntegrityHash split the reader into segment, ec encode the data, compute the hash roots of pieces
 // return the hash result array list and data size
-func ComputeIntegrityHash(reader io.Reader, segmentSize int64, dataShards, parityShards int) ([][]byte, int64, error) {
+func ComputeIntegrityHash(reader io.Reader, segmentSize int64, dataShards, parityShards int) ([][]byte, int64, storageTypes.RedundancyType, error) {
 	var segChecksumList [][]byte
 	ecShards := dataShards + parityShards
 
@@ -29,8 +31,8 @@ func ComputeIntegrityHash(reader io.Reader, segmentSize int64, dataShards, parit
 		n, err := reader.Read(seg)
 		if err != nil {
 			if err != io.EOF {
-				log.Error().Msg("content read failed:" + err.Error())
-				return nil, 0, err
+				log.Error().Msg("failed to read content:" + err.Error())
+				return nil, 0, storageTypes.REDUNDANCY_EC_TYPE, err
 			}
 			break
 		}
@@ -44,7 +46,7 @@ func ComputeIntegrityHash(reader io.Reader, segmentSize int64, dataShards, parit
 			// get erasure encode bytes
 			encodeShards, err := redundancy.EncodeRawSegment(data, dataShards, parityShards)
 			if err != nil {
-				return nil, 0, err
+				return nil, 0, storageTypes.REDUNDANCY_EC_TYPE, err
 			}
 
 			for index, shard := range encodeShards {
@@ -75,15 +77,15 @@ func ComputeIntegrityHash(reader io.Reader, segmentSize int64, dataShards, parit
 
 	wg.Wait()
 
-	return hashList, contentLen, nil
+	return hashList, contentLen, storageTypes.REDUNDANCY_EC_TYPE, nil
 }
 
 // ComputerHashFromFile open a local file and compute hash result and size
-func ComputerHashFromFile(filePath string, segmentSize int64, dataShards, parityShards int) ([][]byte, int64, error) {
+func ComputerHashFromFile(filePath string, segmentSize int64, dataShards, parityShards int) ([][]byte, int64, storageTypes.RedundancyType, error) {
 	f, err := os.Open(filePath)
 	if err != nil {
-		log.Error().Msg("open file fail:" + err.Error())
-		return nil, 0, err
+		log.Error().Msg("failed to open file:" + err.Error())
+		return nil, 0, storageTypes.REDUNDANCY_EC_TYPE, err
 	}
 	defer f.Close()
 
@@ -91,7 +93,7 @@ func ComputerHashFromFile(filePath string, segmentSize int64, dataShards, parity
 }
 
 // ComputerHashFromBuffer support computing hash and size from byte buffer
-func ComputerHashFromBuffer(content []byte, segmentSize int64, dataShards, parityShards int) ([][]byte, int64, error) {
+func ComputerHashFromBuffer(content []byte, segmentSize int64, dataShards, parityShards int) ([][]byte, int64, storageTypes.RedundancyType, error) {
 	reader := bytes.NewReader(content)
 	return ComputeIntegrityHash(reader, segmentSize, dataShards, parityShards)
 }

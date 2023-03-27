@@ -85,12 +85,12 @@ func (r *RSEncoder) DecodeDataShards(content [][]byte) error {
 // The func recreate the missing shards if possible.
 func (r *RSEncoder) DecodeShards(data [][]byte) error {
 	if err := r.encoder().Reconstruct(data); err != nil {
-		log.Error().Msg("recreate the missing shard fail:" + err.Error())
+		log.Error().Msg("failed to recreate the missing shard:" + err.Error())
 		return err
 	}
 	ok, err := r.encoder().Verify(data)
 	if err != nil {
-		log.Error().Msg("decode verify fail:" + err.Error())
+		log.Error().Msg("failed to verify:" + err.Error())
 		return err
 	}
 
@@ -114,7 +114,7 @@ func (r *RSEncoder) ShardSize() int64 {
 func (r *RSEncoder) GetOriginalData(shardsData [][]byte, originLength int64) ([]byte, error) {
 	err := r.DecodeDataShards(shardsData)
 	if err != nil {
-		log.Error().Msg("decode shards fail:" + err.Error())
+		log.Error().Msg("failed to decode shards:" + err.Error())
 		return []byte(""), err
 	}
 
