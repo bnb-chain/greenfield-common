@@ -84,7 +84,7 @@ func ComputeIntegrityHash(reader io.Reader, segmentSize int64, dataShards, parit
 func ComputerHashFromFile(filePath string, segmentSize int64, dataShards, parityShards int) ([][]byte, int64, storageTypes.RedundancyType, error) {
 	f, err := os.Open(filePath)
 	if err != nil {
-		log.Error().Msg("open file fail:" + err.Error())
+		log.Error().Msg("failed open file:" + err.Error())
 		return nil, 0, storageTypes.REDUNDANCY_EC_TYPE, err
 	}
 	defer f.Close()

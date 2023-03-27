@@ -18,14 +18,15 @@ import (
 const (
 	segmentSize          = 16 * 1024 * 1024
 	expectedHashBytesLen = 32
+	testSize             = 32 * 1024 * 1024
 )
 
 func TestHash(t *testing.T) {
-	length := int64(32 * 1024 * 1024)
+	length := int64(testSize)
 	contentToHash := createTestData(length)
 	start := time.Now()
 
-	hashResult, size, redundnacyType, err := ComputeIntegrityHash(contentToHash, int64(segmentSize), redundancy.DataBlocks, redundancy.ParityBlocks)
+	hashResult, size, redundancyType, err := ComputeIntegrityHash(contentToHash, int64(segmentSize), redundancy.DataBlocks, redundancy.ParityBlocks)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -33,7 +34,7 @@ func TestHash(t *testing.T) {
 	if size != length {
 		t.Errorf("compute size error")
 	}
-	if redundnacyType != types.REDUNDANCY_EC_TYPE {
+	if redundancyType != types.REDUNDANCY_EC_TYPE {
 		t.Errorf("compare  redundnacy type error")
 	}
 
