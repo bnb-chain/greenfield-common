@@ -90,7 +90,6 @@ func TestHashResult(t *testing.T) {
 			t.Errorf("compare hash error")
 		}
 	}
-
 }
 
 func TestIntegrityHasher(t *testing.T) {
@@ -160,7 +159,6 @@ func TestIntegrityHasher(t *testing.T) {
 	if err := verifyHashResult(hashHandler, expectedHashList, int64(contentlen)); err != nil {
 		t.Errorf(err.Error())
 	}
-
 }
 
 func createTestData(size int64) *strings.Reader {

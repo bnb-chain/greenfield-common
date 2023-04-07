@@ -21,7 +21,6 @@ type IntegrityHasher struct {
 	segmentSize  int64
 	dataShards   int
 	parityShards int
-	tempBuffer   []byte
 	contentLen   int64
 }
 
@@ -54,10 +53,10 @@ func (i *IntegrityHasher) Init() {
 func (i *IntegrityHasher) Append(data []byte) error {
 	dataSize := len(data)
 	if dataSize > int(i.segmentSize) {
-		return errors.New("append data size should less than segmentSize")
+		return errors.New("the length of data size should be less than segmentSize")
 	}
 	if len(i.buffer) >= int(i.segmentSize) {
-		return errors.New("the buffer of handler should less than segmentSize")
+		return errors.New("the buffer of handler should be less than segmentSize")
 	}
 	originBuffer := make([]byte, len(i.buffer))
 	copy(originBuffer, i.buffer)
@@ -95,8 +94,7 @@ func (i *IntegrityHasher) Append(data []byte) error {
 }
 
 // Finish return the result of the Integrity hashes
-func (i *IntegrityHasher) Finish() ([][]byte, int64,
-	storageTypes.RedundancyType, error) {
+func (i *IntegrityHasher) Finish() ([][]byte, int64, storageTypes.RedundancyType, error) {
 	// deal with  remain content tot be computed
 	if len(i.buffer) > 0 {
 		if err := i.computeBufferHash(); err != nil {
@@ -114,15 +112,9 @@ func (i *IntegrityHasher) Finish() ([][]byte, int64,
 	for spID, content := range i.ecDataHashes {
 		go func(data [][]byte, id int) {
 			defer wg.Done()
-			var checksumList [][]byte
-			for _, piecesHash := range data {
-				checksumList = append(checksumList, piecesHash)
-			}
-
-			hashList[id+1] = GenerateIntegrityHash(checksumList)
+			hashList[id+1] = GenerateIntegrityHash(data)
 		}(content, spID)
 	}
-
 	wg.Wait()
 
 	return hashList, i.contentLen, storageTypes.REDUNDANCY_EC_TYPE, nil
@@ -131,7 +123,6 @@ func (i *IntegrityHasher) Finish() ([][]byte, int64,
 // computeBufferHash erasure encode the buffer of IntegrityHasher and compute the hash
 func (i *IntegrityHasher) computeBufferHash() error {
 	i.contentLen += int64(len(i.buffer))
-
 	originBuffer := make([]byte, len(i.buffer))
 	copy(originBuffer, i.buffer)
 	// compute segment hash
@@ -158,7 +149,8 @@ func (i *IntegrityHasher) computeBufferHash() error {
 // ComputeIntegrityHash split the reader into segment, ec encode the data, compute the hash roots of pieces
 // return the hash result array list and data segmentSize
 func ComputeIntegrityHash(reader io.Reader, segmentSize int64, dataShards, parityShards int) ([][]byte, int64,
-	storageTypes.RedundancyType, error) {
+	storageTypes.RedundancyType, error,
+) {
 	var segChecksumList [][]byte
 	ecShards := dataShards + parityShards
 
@@ -204,7 +196,7 @@ func ComputeIntegrityHash(reader io.Reader, segmentSize int64, dataShards, parit
 	// combine the hash root of pieces of the PrimarySP
 	hashList[0] = GenerateIntegrityHash(segChecksumList)
 
-	// compute the hash root of pieces of the SecondarySP
+	// compute the integrity hash of the SecondarySP
 	wg := &sync.WaitGroup{}
 	spLen := len(encodeDataHash)
 	wg.Add(spLen)
