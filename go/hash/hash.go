@@ -18,9 +18,9 @@ func ComputeIntegrityHash(reader io.Reader, segmentSize int64, dataShards, parit
 	var segChecksumList [][]byte
 	ecShards := dataShards + parityShards
 
-	encodeData := make([][][]byte, ecShards)
+	encodeDataHash := make([][][]byte, ecShards)
 	for i := 0; i < ecShards; i++ {
-		encodeData[i] = make([][]byte, 0)
+		encodeDataHash[i] = make([][]byte, 0)
 	}
 
 	hashList := make([][]byte, ecShards+1)
@@ -50,7 +50,9 @@ func ComputeIntegrityHash(reader io.Reader, segmentSize int64, dataShards, parit
 			}
 
 			for index, shard := range encodeShards {
-				encodeData[index] = append(encodeData[index], shard)
+				// compute hash of pieces
+				piecesHash := GenerateChecksum(shard)
+				encodeDataHash[index] = append(encodeDataHash[index], piecesHash)
 			}
 		}
 	}
@@ -60,18 +62,12 @@ func ComputeIntegrityHash(reader io.Reader, segmentSize int64, dataShards, parit
 
 	// compute the hash root of pieces of the SecondarySP
 	wg := &sync.WaitGroup{}
-	spLen := len(encodeData)
+	spLen := len(encodeDataHash)
 	wg.Add(spLen)
-	for spID, content := range encodeData {
+	for spID, content := range encodeDataHash {
 		go func(data [][]byte, id int) {
 			defer wg.Done()
-			var checksumList [][]byte
-			for _, pieces := range data {
-				piecesHash := GenerateChecksum(pieces)
-				checksumList = append(checksumList, piecesHash)
-			}
-
-			hashList[id+1] = GenerateIntegrityHash(checksumList)
+			hashList[id+1] = GenerateIntegrityHash(data)
 		}(content, spID)
 	}
 
