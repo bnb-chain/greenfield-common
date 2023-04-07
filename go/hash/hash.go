@@ -67,12 +67,7 @@ func ComputeIntegrityHash(reader io.Reader, segmentSize int64, dataShards, parit
 	for spID, content := range encodeDataHash {
 		go func(data [][]byte, id int) {
 			defer wg.Done()
-			var checksumList [][]byte
-			for _, piecesHash := range data {
-				checksumList = append(checksumList, piecesHash)
-			}
-
-			hashList[id+1] = GenerateIntegrityHash(checksumList)
+			hashList[id+1] = GenerateIntegrityHash(data)
 		}(content, spID)
 	}
 
