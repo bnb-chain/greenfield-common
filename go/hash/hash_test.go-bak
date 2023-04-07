@@ -1,0 +1,97 @@
+package hash
+
+import (
+	"bytes"
+	"encoding/base64"
+	"fmt"
+	"math/rand"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/bnb-chain/greenfield/x/storage/types"
+	"github.com/stretchr/testify/assert"
+
+	"github.com/bnb-chain/greenfield-common/go/redundancy"
+)
+
+const (
+	segmentSize          = 16 * 1024 * 1024
+	expectedHashBytesLen = 32
+	testSize             = 32 * 1024 * 1024
+)
+
+func TestHash(t *testing.T) {
+	length := int64(testSize)
+	contentToHash := createTestData(length)
+	start := time.Now()
+
+	hashResult, size, redundancyType, err := ComputeIntegrityHash(contentToHash, int64(segmentSize), redundancy.DataBlocks, redundancy.ParityBlocks)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+	fmt.Println("hash cost time:", time.Since(start).Milliseconds(), "ms")
+	if size != length {
+		t.Errorf("compute size error")
+	}
+	if redundancyType != types.REDUNDANCY_EC_TYPE {
+		t.Errorf("compare  redundnacy type error")
+	}
+
+	if len(hashResult) != redundancy.DataBlocks+redundancy.ParityBlocks+1 {
+		t.Errorf("compute hash num not right")
+	}
+
+	for _, hash := range hashResult {
+		if len(hash) != expectedHashBytesLen {
+			t.Errorf("hash length not right")
+		}
+	}
+	hashList, _, _, err := ComputerHashFromFile("hash.go", int64(segmentSize), redundancy.DataBlocks, redundancy.ParityBlocks)
+	assert.Nil(t, err)
+	if len(hashList) != redundancy.DataBlocks+redundancy.ParityBlocks+1 {
+		t.Errorf("compute hash num not right")
+	}
+	for _, hash := range hashResult {
+		if len(hash) != 32 {
+			t.Errorf("hash length not right")
+		}
+	}
+}
+
+func TestHashResult(t *testing.T) {
+	var buffer bytes.Buffer
+	line := `1211233234567890,1234562337111890111,123452367890,1234567890,1234111567890,1233456744890,1234567890,1234567890,122234567890`
+
+	// generate 98 buffer
+	for i := 0; i < 1024*1024*10; i++ {
+		buffer.WriteString(fmt.Sprintf("[%05d] %s\n", i, line))
+	}
+	hashList, _, _, err := ComputeIntegrityHash(bytes.NewReader(buffer.Bytes()), int64(segmentSize), redundancy.DataBlocks, redundancy.ParityBlocks)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	hashList2, _, _, err := ComputeIntegrityHash2(bytes.NewReader(buffer.Bytes()), int64(segmentSize), redundancy.DataBlocks, redundancy.ParityBlocks)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	for id, hash := range hashList {
+		hash2 := hashList2[id]
+		if base64.StdEncoding.EncodeToString(hash) != base64.StdEncoding.EncodeToString(hash2) {
+			t.Errorf("compare hash error")
+		}
+	}
+
+}
+
+func createTestData(size int64) *strings.Reader {
+	const letterBytes = "abcdefghijklmnopqrstuvwxyz"
+	buf := make([]byte, size)
+	for i := range buf {
+		buf[i] = letterBytes[rand.Intn(len(letterBytes))]
+	}
+	r := strings.NewReader(string(buf))
+	return r
+}
