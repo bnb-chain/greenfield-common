@@ -45,6 +45,16 @@ func ComputeIntegrityHash(reader io.Reader, segmentSize int64, dataShards, parit
 
 // compute hash roots based on file path
 func ComputerHashFromFile(filePath string, segmentSize int64, dataShards, parityShards int) ([]string, int64, error)
+
+// IntegrityHasher is used to calculate integrityHash in a stream way. It contains Init, Append, and Finish functions.
+IntegrityHasher := NewHasher(segmentSize, dataShards, parityShards)
+IntegrityHasher.Init()
+
+// append the data chunks to IntegrityHasher, the data size should be less than segment size
+func (i *IntegrityHasher) Append(data []byte) error
+
+// compute the result of the Integrity hashes
+func (i *IntegrityHasher) Finish() ([][]byte, int64, storageTypes.RedundancyType, error) {
 ```
 
 ### 3. Generate checksum and integrity hash
