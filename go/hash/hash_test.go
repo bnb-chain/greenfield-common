@@ -183,7 +183,7 @@ func verifyHashResult(hashHandler *IntegrityHasher, expectedResult []string, exp
 
 	for id, hash := range hashList {
 		if base64.StdEncoding.EncodeToString(hash) != expectedResult[id] {
-			return errors.New("fail to compare hash")
+			return errors.New("failed to compare hash")
 		}
 	}
 
