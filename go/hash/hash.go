@@ -264,12 +264,15 @@ func computePieceHashes(segment []byte, dataShards, parityShards int) ([][]byte,
 	return pieceChecksumList, nil
 }
 
-func hashWorker(jobs <-chan SegmentInfo, errChan chan<- error, dataShards, parityShards int, wg *sync.WaitGroup, checksumMap *sync.Map, pieceHashMap *sync.Map) {
+// hashWorker receive the segment info and compute the corresponding segment hash and piece hashes.
+// The result will be stored in the sync map to compute integrity hash in order.
+func hashWorker(jobs <-chan SegmentInfo, errChan chan<- error, dataShards, parityShards int, wg *sync.WaitGroup,
+	segmentHashMap *sync.Map, pieceHashMap *sync.Map) {
 	defer wg.Done()
 
 	for segInfo := range jobs {
 		checksum := GenerateChecksum(segInfo.Data)
-		checksumMap.Store(segInfo.SegmentId, checksum)
+		segmentHashMap.Store(segInfo.SegmentId, checksum)
 
 		pieceCheckSumList, err := computePieceHashes(segInfo.Data, dataShards, parityShards)
 		if err != nil {
