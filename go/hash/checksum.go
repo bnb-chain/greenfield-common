@@ -7,7 +7,7 @@ import (
 )
 
 type SegmentInfo struct {
-	SegmentId int
+	SegmentID int
 	Data      []byte
 }
 

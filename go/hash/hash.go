@@ -17,10 +17,6 @@ import (
 
 const maxThreadNum = 5
 
-type ComputeHashOption struct {
-	mutex *sync.Mutex
-}
-
 // IntegrityHasher compute integrityHash
 type IntegrityHasher struct {
 	ecDataHashes [][][]byte
@@ -267,19 +263,20 @@ func computePieceHashes(segment []byte, dataShards, parityShards int) ([][]byte,
 // hashWorker receive the segment info and compute the corresponding segment hash and piece hashes.
 // The result will be stored in the sync map to compute integrity hash in order.
 func hashWorker(jobs <-chan SegmentInfo, errChan chan<- error, dataShards, parityShards int, wg *sync.WaitGroup,
-	segmentHashMap *sync.Map, pieceHashMap *sync.Map) {
+	segmentHashMap *sync.Map, pieceHashMap *sync.Map,
+) {
 	defer wg.Done()
 
 	for segInfo := range jobs {
 		checksum := GenerateChecksum(segInfo.Data)
-		segmentHashMap.Store(segInfo.SegmentId, checksum)
+		segmentHashMap.Store(segInfo.SegmentID, checksum)
 
 		pieceCheckSumList, err := computePieceHashes(segInfo.Data, dataShards, parityShards)
 		if err != nil {
 			errChan <- err
 			return
 		}
-		pieceHashMap.Store(segInfo.SegmentId, pieceCheckSumList)
+		pieceHashMap.Store(segInfo.SegmentID, pieceCheckSumList)
 	}
 }
 
@@ -327,7 +324,7 @@ func ComputeIntegrityHashParallel(reader io.Reader, segmentSize int64, dataShard
 			data := seg[:n]
 			// compute segment hash
 
-			jobChan <- SegmentInfo{SegmentId: jobNum, Data: data}
+			jobChan <- SegmentInfo{SegmentID: jobNum, Data: data}
 			jobNum++
 		}
 	}
