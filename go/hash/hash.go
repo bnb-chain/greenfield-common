@@ -15,7 +15,10 @@ import (
 	"github.com/bnb-chain/greenfield-common/go/redundancy"
 )
 
-const maxThreadNum = 5
+const (
+	maxThreadNum   = 5
+	jobChannelSize = 100
+)
 
 // IntegrityHasher compute integrityHash
 type IntegrityHasher struct {
@@ -150,9 +153,21 @@ func (i *IntegrityHasher) computeBufferHash() error {
 	return nil
 }
 
-// ComputeIntegrityHash split the reader into segment, ec encode the data, compute the hash roots of pieces
-// return the hash result array list and data segmentSize
-func ComputeIntegrityHash(reader io.Reader, segmentSize int64, dataShards, parityShards int) ([][]byte, int64,
+// ComputeIntegrityHash  return the integrity hash of file and data size
+// If isSerial is true, compute the integrity hash using the serial version
+// If isSerial is false or not provided, compute the integrity hash using the parallel version
+func ComputeIntegrityHash(reader io.Reader, segmentSize int64, dataShards, parityShards int, isSerial bool) ([][]byte, int64,
+	storageTypes.RedundancyType, error,
+) {
+	if isSerial {
+		return ComputeIntegrityHashSerial(reader, segmentSize, dataShards, parityShards)
+	}
+	return ComputeIntegrityHashParallel(reader, segmentSize, dataShards, parityShards)
+}
+
+// ComputeIntegrityHashSerial split the reader into segment, ec encode the data, compute the hash roots of pieces in a serial way
+// return the hash result array list and data size
+func ComputeIntegrityHashSerial(reader io.Reader, segmentSize int64, dataShards, parityShards int) ([][]byte, int64,
 	storageTypes.RedundancyType, error,
 ) {
 	var segChecksumList [][]byte
@@ -234,15 +249,16 @@ func ComputerHashFromFile(filePath string, segmentSize int64, dataShards, parity
 	}
 	defer f.Close()
 
-	return ComputeIntegrityHash(f, segmentSize, dataShards, parityShards)
+	return ComputeIntegrityHash(f, segmentSize, dataShards, parityShards, false)
 }
 
 // ComputerHashFromBuffer support computing hash and segmentSize from byte buffer
 func ComputerHashFromBuffer(content []byte, segmentSize int64, dataShards, parityShards int) ([][]byte, int64, storageTypes.RedundancyType, error) {
 	reader := bytes.NewReader(content)
-	return ComputeIntegrityHash(reader, segmentSize, dataShards, parityShards)
+	return ComputeIntegrityHash(reader, segmentSize, dataShards, parityShards, false)
 }
 
+// computePieceHashes encode the segment and return the hashes of ec pieces
 func computePieceHashes(segment []byte, dataShards, parityShards int) ([][]byte, error) {
 	// get erasure encode bytes
 	encodeShards, err := redundancy.EncodeRawSegment(segment, dataShards, parityShards)
@@ -280,6 +296,8 @@ func hashWorker(jobs <-chan SegmentInfo, errChan chan<- error, dataShards, parit
 	}
 }
 
+// ComputeIntegrityHashParallel split the reader into segment, ec encode the data, compute the hash roots of pieces using
+// return the hash result array list and data segmentSize
 func ComputeIntegrityHashParallel(reader io.Reader, segmentSize int64, dataShards, parityShards int) ([][]byte, int64, storageTypes.RedundancyType, error) {
 	var (
 		segChecksumList [][]byte
@@ -287,14 +305,14 @@ func ComputeIntegrityHashParallel(reader io.Reader, segmentSize int64, dataShard
 		contentLen      = int64(0)
 		wg              sync.WaitGroup
 	)
-
+	// use sync.map to store the corresponding data of intermediate hash results and segment IDs
 	segHashMap := &sync.Map{}
 	pieceHashMap := &sync.Map{}
 	encodeDataHash := make([][][]byte, ecShards)
-
+	// store the result of integrity hash
 	hashList := make([][]byte, ecShards+1)
 
-	jobChan := make(chan SegmentInfo, 100)
+	jobChan := make(chan SegmentInfo, jobChannelSize)
 	errChan := make(chan error, 1)
 	// the thread num should be less than maxThreadNum
 	threadNum := runtime.NumCPU() / 2
@@ -346,26 +364,26 @@ func ComputeIntegrityHashParallel(reader io.Reader, segmentSize int64, dataShard
 	}
 
 	for i := 0; i < jobNum; i++ {
-		value, ok := segHashMap.Load(i)
+		segHashValue, ok := segHashMap.Load(i)
 		if !ok {
 			return nil, 0, storageTypes.REDUNDANCY_EC_TYPE, fmt.Errorf("fail to load the segment hash")
 		}
-		segChecksumList = append(segChecksumList, value.([]byte))
+		segChecksumList = append(segChecksumList, segHashValue.([]byte))
 
-		pieceHashes, ok := pieceHashMap.Load(i)
+		pieceHashValue, ok := pieceHashMap.Load(i)
 		if !ok {
 			return nil, 0, storageTypes.REDUNDANCY_EC_TYPE, fmt.Errorf("fail to load the segment hash")
 		}
-		hashValues := pieceHashes.([][]byte)
+		hashValues := pieceHashValue.([][]byte)
 		for j := 0; j < len(encodeDataHash); j++ {
 			encodeDataHash[j][i] = hashValues[j]
 		}
 	}
 
-	// combine the hash root of pieces of the PrimarySP
+	//  compute the integrity root of pieces of the PrimarySP
 	hashList[0] = GenerateIntegrityHash(segChecksumList)
 
-	// compute the integrity hash of the SecondarySP
+	// compute the integrity hash of the SecondarySPs
 	spLen := len(encodeDataHash)
 	wg.Add(spLen)
 	for spID, content := range encodeDataHash {
