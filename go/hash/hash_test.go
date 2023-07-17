@@ -28,7 +28,7 @@ func TestHash(t *testing.T) {
 	contentToHash := createTestData(length)
 	start := time.Now()
 
-	hashResult, size, redundancyType, err := ComputeIntegrityHash(contentToHash, int64(segmentSize), redundancy.DataBlocks, redundancy.ParityBlocks, true)
+	hashResult, size, redundancyType, err := ComputeIntegrityHash(contentToHash, int64(segmentSize), redundancy.DataBlocks, redundancy.ParityBlocks, false)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -55,13 +55,13 @@ func TestHash(t *testing.T) {
 		t.Errorf("compute hash num not right")
 	}
 	for _, hash := range hashResult {
-		if len(hash) != 32 {
+		if len(hash) != expectedHashBytesLen {
 			t.Errorf("hash length not right")
 		}
 	}
 }
 
-func TestHashResult(t *testing.T) {
+func TestHashResultSerial(t *testing.T) {
 	var buffer bytes.Buffer
 	line := `1234567890,1234567890,1234567890,1234567890,1234567890,1234567890,1234567890,1234567890,1234567890`
 
@@ -69,7 +69,7 @@ func TestHashResult(t *testing.T) {
 	for i := 0; i < 1024*1024; i++ {
 		buffer.WriteString(fmt.Sprintf("[%05d] %s\n", i, line))
 	}
-	hashList, _, _, err := ComputeIntegrityHash(bytes.NewReader(buffer.Bytes()), int64(segmentSize), redundancy.DataBlocks, redundancy.ParityBlocks, true)
+	hashList, _, _, err := ComputeIntegrityHashSerial(bytes.NewReader(buffer.Bytes()), int64(segmentSize), redundancy.DataBlocks, redundancy.ParityBlocks)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
