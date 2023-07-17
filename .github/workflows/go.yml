@@ -46,7 +46,7 @@ jobs:
     name: Golang Uint Test
     strategy:
       matrix:
-        go-version: [ 1.18.x ]
+        go-version: [ 1.19.x ]
         os: [ ubuntu-latest ]
     runs-on: ${{ matrix.os }}
     env:
@@ -62,27 +62,3 @@ jobs:
       - name: test
         working-directory: ./go
         run: make test
-
-  coverage:
-    name: Golang Code Coverage
-    strategy:
-      matrix:
-        go-version: [ 1.18.x ]
-        os: [ ubuntu-latest ]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup GitHub Token
-        run: git config --global url.https://$GH_ACCESS_TOKEN@github.com/.insteadOf https://github.com/
-      - uses: actions/setup-go@v3
-        with:
-          go-version: ${{ matrix.go-version }}
-      - name: Run coverage
-        working-directory: ./go
-        run: go test -race -coverprofile=coverage.txt -covermode=atomic ./...
-#      - name: Upload coverage to Codecov
-#        uses: codecov/codecov-action@v3
-#        with:
-#          files: go/coverage.txt
-#          flags: go
-#          fail_ci_if_error: true
