@@ -34,16 +34,18 @@ func EncodeRawSegment(content []byte, dataShards, parityShards int) ([][]byte, e
 func DecodeRawSegment(pieceData [][]byte, segmentSize int64, dataShards, parityShards int) ([]byte, error) 
 ```
 
-### 2. Compute sha256 hash of file content
+### 2. Compute integrity hash of file content
 
-Hash package support methods to compute hash roots of greenfield objects , the computed methods is based on 
+Hash package support methods to compute the integrity hash of greenfield objects , the computed methods is based on 
 redundancy strategy of greenfield. Function as follows:
 
 ```go
-// compute hash roots fromm io reader, the parameters should fetch from chain besides reader
-func ComputeIntegrityHash(reader io.Reader, segmentSize int64, dataShards, parityShards int) ([]string, int64, error)
+// ComputeIntegrityHash compute the integrity hash of file, return the integrity hashes, redundancy type  and file size.
+// the parameters of segment size, dataShards and parityShards should fetch from chain
+func ComputeIntegrityHash(reader io.Reader, segmentSize int64, dataShards, parityShards int, isSerial bool) ([][]byte, int64,
+storageTypes.RedundancyType, error)
 
-// compute hash roots based on file path
+// ComputerHashFromFile compute the integrity hash based on file path
 func ComputerHashFromFile(filePath string, segmentSize int64, dataShards, parityShards int) ([]string, int64, error)
 
 // IntegrityHasher is used to calculate integrityHash in a stream way. It contains Init, Append, and Finish functions.
@@ -59,7 +61,7 @@ func (i *IntegrityHasher) Finish() ([][]byte, int64, storageTypes.RedundancyType
 
 ### 3. Generate checksum and integrity hash
 Common library supports generating checksum and integrity hash. `GenerateChecksum` uses sha256 algorithm to compute hash. 
-`GenerateIntegrityHash` is used to compute all checksum to get a integrity hash. Function as follows:
+`GenerateIntegrityHash` is used to compute all checksum to get an integrity hash. Function as follows:
 
 ```go
 // GenerateChecksum generates the checksum of one piece data
