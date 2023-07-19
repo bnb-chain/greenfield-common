@@ -6,6 +6,11 @@ import (
 	"fmt"
 )
 
+type SegmentInfo struct {
+	SegmentID int
+	Data      []byte
+}
+
 // GenerateChecksum generates the checksum of one piece data
 func GenerateChecksum(pieceData []byte) []byte {
 	hash := sha256.New()
