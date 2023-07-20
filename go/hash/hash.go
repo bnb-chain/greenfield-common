@@ -287,12 +287,12 @@ func hashWorker(jobs <-chan SegmentInfo, errChan chan<- error, dataShards, parit
 		checksum := GenerateChecksum(segInfo.Data)
 		segmentHashMap.Store(segInfo.SegmentID, checksum)
 
-		pieceCheckSumList, err := computePieceHashes(segInfo.Data, dataShards, parityShards)
+		pieceChecksumList, err := computePieceHashes(segInfo.Data, dataShards, parityShards)
 		if err != nil {
 			errChan <- err
 			return
 		}
-		pieceHashMap.Store(segInfo.SegmentID, pieceCheckSumList)
+		pieceHashMap.Store(segInfo.SegmentID, pieceChecksumList)
 	}
 }
 
