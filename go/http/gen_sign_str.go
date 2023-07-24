@@ -91,7 +91,7 @@ func GetMsgToSign(req *http.Request) []byte {
 // GetMsgToSignForPreSignedURL is only used in SP get Object API.  This util method can be used in by SP side and client side to construct the MsgToSign
 func GetMsgToSignForPreSignedURL(req *http.Request) []byte {
 	queryValues := req.URL.Query()
-	queryValues.Del("Authorization")
+	queryValues.Del(HTTPHeaderAuthorization)
 	req.URL.RawQuery = queryValues.Encode()
 	return GetMsgToSign(req)
 }
