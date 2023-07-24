@@ -16,6 +16,8 @@ const (
 	HTTPHeaderUserAddress = "X-Gnfd-User-Address"
 	// HTTPHeaderDate The date and time format must follow the ISO 8601 standard, and must be formatted with the "yyyyMMddTHHmmssZ" format. For example if the date and time was "08/01/2016 15:32:41.982-700" then it must first be converted to UTC (Coordinated Universal Time) and then submitted as "20160801T223241Z".
 	HTTPHeaderDate = "X-Gnfd-Date"
-	// HTTPHeaderExpires Provides the time period, in seconds, for which the generated signature URL is valid. For example, 86400 (24 hours). This value is an integer. The minimum value you can set is 1, and the maximum is 604800 (seven days).
-	HTTPHeaderExpires = "X-Gnfd-Expires"
+	// HTTPHeaderExpiryTimestamp defines the expiry timestamp, which is the ISO 8601 datetime string (e.g. 2021-09-30T16:25:24Z), and the maximum Timestamp since the request sent must be less than MaxExpiryAgeInSec (seven days).
+	HTTPHeaderExpiryTimestamp = "X-Gnfd-Expiry-Timestamp"
+	// MaxExpiryAgeInSec
+	MaxExpiryAgeInSec = 3600 * 24 * 7 // 7 days
 )

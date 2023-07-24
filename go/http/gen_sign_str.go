@@ -12,7 +12,7 @@ import (
 var supportHeads = []string{
 	HTTPHeaderContentSHA256, HTTPHeaderTransactionHash, HTTPHeaderObjectID, HTTPHeaderRedundancyIndex, HTTPHeaderResource,
 	HTTPHeaderDate, HTTPHeaderRange, HTTPHeaderPieceIndex, HTTPHeaderContentType, HTTPHeaderContentMD5, HTTPHeaderUnsignedMsg, HTTPHeaderUserAddress,
-	HTTPHeaderExpires,
+	HTTPHeaderExpiryTimestamp,
 }
 
 // getCanonicalHeaders generate a list of request headers with their values
@@ -70,7 +70,8 @@ func getSignedHeaders(req *http.Request, supportHeaders map[string]struct{}) str
 }
 
 // GetCanonicalRequest generate the canonicalRequest base on aws s3 sign without payload hash. t
-func GetCanonicalRequest(req *http.Request, supportHeaders map[string]struct{}) string {
+func GetCanonicalRequest(req *http.Request) string {
+	supportHeaders := initSupportHeaders()
 	req.URL.RawQuery = strings.ReplaceAll(req.URL.Query().Encode(), "+", "%20")
 	canonicalRequest := strings.Join([]string{
 		req.Method,
@@ -84,8 +85,7 @@ func GetCanonicalRequest(req *http.Request, supportHeaders map[string]struct{}) 
 
 // GetMsgToSign generate the msg bytes from canonicalRequest to sign
 func GetMsgToSign(req *http.Request) []byte {
-	headers := initSupportHeaders()
-	return crypto.Keccak256([]byte(GetCanonicalRequest(req, headers)))
+	return crypto.Keccak256([]byte(GetCanonicalRequest(req)))
 }
 
 // GetMsgToSignForPreSignedURL is only used in SP get Object API.  This util method can be used in by SP side and client side to construct the MsgToSign
