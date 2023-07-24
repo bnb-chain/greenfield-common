@@ -7,13 +7,12 @@ import (
 	"strings"
 
 	"github.com/ethereum/go-ethereum/crypto"
-
-	"github.com/bnb-chain/greenfield-common/go/hash"
 )
 
 var supportHeads = []string{
 	HTTPHeaderContentSHA256, HTTPHeaderTransactionHash, HTTPHeaderObjectID, HTTPHeaderRedundancyIndex, HTTPHeaderResource,
 	HTTPHeaderDate, HTTPHeaderRange, HTTPHeaderPieceIndex, HTTPHeaderContentType, HTTPHeaderContentMD5, HTTPHeaderUnsignedMsg, HTTPHeaderUserAddress,
+	HTTPHeaderExpires,
 }
 
 // getCanonicalHeaders generate a list of request headers with their values
@@ -86,8 +85,15 @@ func GetCanonicalRequest(req *http.Request, supportHeaders map[string]struct{}) 
 // GetMsgToSign generate the msg bytes from canonicalRequest to sign
 func GetMsgToSign(req *http.Request) []byte {
 	headers := initSupportHeaders()
-	signBytes := hash.GenerateChecksum([]byte(GetCanonicalRequest(req, headers)))
-	return crypto.Keccak256(signBytes)
+	return crypto.Keccak256([]byte(GetCanonicalRequest(req, headers)))
+}
+
+// GetMsgToSignForPreSignedURL is only used in SP get Object API.  This util method can be used in by SP side and client side to construct the MsgToSign
+func GetMsgToSignForPreSignedURL(req *http.Request) []byte {
+	queryValues := req.URL.Query()
+	queryValues.Del("Authorization")
+	req.URL.RawQuery = queryValues.Encode()
+	return GetMsgToSign(req)
 }
 
 func initSupportHeaders() map[string]struct{} {
