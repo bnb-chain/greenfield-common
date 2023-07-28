@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	"github.com/ethereum/go-ethereum/crypto"
+
+	"github.com/bnb-chain/greenfield-common/go/hash"
 )
 
 var supportHeads = []string{
@@ -69,7 +71,7 @@ func getSignedHeaders(req *http.Request, supportHeaders map[string]struct{}) str
 	return strings.Join(getSortedHeaders(req, supportHeaders), ";")
 }
 
-// GetCanonicalRequest generate the canonicalRequest base on aws s3 sign without payload hash. t
+// GetCanonicalRequest generate the canonicalRequest base on aws s3 sign without payload hash.
 func GetCanonicalRequest(req *http.Request) string {
 	supportHeaders := initSupportHeaders()
 	req.URL.RawQuery = strings.ReplaceAll(req.URL.Query().Encode(), "+", "%20")
@@ -83,17 +85,28 @@ func GetCanonicalRequest(req *http.Request) string {
 	return canonicalRequest
 }
 
+// Deprecated: This method will be deleted in future versions, once most SP and clients migrates to GNFD1 Auth.
+// See GetMsgToSignInGNFD1
 // GetMsgToSign generate the msg bytes from canonicalRequest to sign
 func GetMsgToSign(req *http.Request) []byte {
+	signBytes := hash.GenerateChecksum([]byte(GetCanonicalRequest(req)))
+	return crypto.Keccak256(signBytes)
+}
+
+// GetMsgToSignInGNFD1Auth generate the msg bytes from canonicalRequest to sign
+// This method will be used for the following GNFD1 Auth algorithms:
+// - GNFD1-ECDSA
+// - GNFD1-EDDSA
+func GetMsgToSignInGNFD1Auth(req *http.Request) []byte {
 	return crypto.Keccak256([]byte(GetCanonicalRequest(req)))
 }
 
-// GetMsgToSignForPreSignedURL is only used in SP get Object API.  This util method can be used in by SP side and client side to construct the MsgToSign
-func GetMsgToSignForPreSignedURL(req *http.Request) []byte {
+// GetMsgToSignInGNFD1AuthForPreSignedURL is only used in SP get Object API.  This util method can be used in by SP side and client side to construct the MsgToSign
+func GetMsgToSignInGNFD1AuthForPreSignedURL(req *http.Request) []byte {
 	queryValues := req.URL.Query()
 	queryValues.Del(HTTPHeaderAuthorization)
 	req.URL.RawQuery = queryValues.Encode()
-	return GetMsgToSign(req)
+	return GetMsgToSignInGNFD1Auth(req)
 }
 
 func initSupportHeaders() map[string]struct{} {
