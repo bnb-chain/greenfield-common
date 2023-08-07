@@ -21,4 +21,9 @@ const (
 	HTTPHeaderAuthorization   = "Authorization"
 	// MaxExpiryAgeInSec
 	MaxExpiryAgeInSec = 3600 * 24 * 7 // 7 days
+
+	// Gnfd1Ecdsa auth type will use ECDSA-secp256k1 algorithm
+	Gnfd1Ecdsa = "GNFD1-ECDSA"
+	// Gnfd1Eddsa auth type will use EDDSA algorithm for off-chain auth, usually in web applications
+	Gnfd1Eddsa = "GNFD1-EDDSA"
 )
