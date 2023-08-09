@@ -26,4 +26,6 @@ const (
 	Gnfd1Ecdsa = "GNFD1-ECDSA"
 	// Gnfd1Eddsa auth type will use EDDSA algorithm for off-chain auth, usually in web applications
 	Gnfd1Eddsa = "GNFD1-EDDSA"
+	// Gnfd1EthPersonalSign auth type will use eth personal sign algorithm. It will only be used in SP update_key API.
+	Gnfd1EthPersonalSign = "GNFD1-ETH-PERSONAL_SIGN"
 )
