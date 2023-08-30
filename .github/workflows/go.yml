@@ -23,7 +23,7 @@ jobs:
   lint:
     strategy:
       matrix:
-        go-version: [ 1.19.x ]
+        go-version: [ 1.20.x ]
         os: [ ubuntu-latest ]
     name: Golang Code Lint
     runs-on: ${{ matrix.os }}
@@ -39,14 +39,17 @@ jobs:
         uses: golangci/golangci-lint-action@v3
         with:
           # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
-          version: v1.50.0
+          version: v1.52.1
+          skip-pkg-cache: true
+          skip-cache: true
+          skip-build-cache: true
           working-directory: ./go
 
   test:
     name: Golang Uint Test
     strategy:
       matrix:
-        go-version: [ 1.19.x ]
+        go-version: [ 1.20.x ]
         os: [ ubuntu-latest ]
     runs-on: ${{ matrix.os }}
     env:
