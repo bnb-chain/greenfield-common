@@ -14,6 +14,7 @@ import (
 var supportHeads = []string{
 	HTTPHeaderContentSHA256, HTTPHeaderTransactionHash, HTTPHeaderObjectID, HTTPHeaderRedundancyIndex, HTTPHeaderResource,
 	HTTPHeaderDate, HTTPHeaderRange, HTTPHeaderPieceIndex, HTTPHeaderContentType, HTTPHeaderContentMD5, HTTPHeaderUnsignedMsg, HTTPHeaderUserAddress,
+	HTTPHeaderExpiryTimestamp,
 }
 
 // getCanonicalHeaders generate a list of request headers with their values
@@ -70,8 +71,9 @@ func getSignedHeaders(req *http.Request, supportHeaders map[string]struct{}) str
 	return strings.Join(getSortedHeaders(req, supportHeaders), ";")
 }
 
-// GetCanonicalRequest generate the canonicalRequest base on aws s3 sign without payload hash. t
-func GetCanonicalRequest(req *http.Request, supportHeaders map[string]struct{}) string {
+// GetCanonicalRequest generate the canonicalRequest base on aws s3 sign without payload hash.
+func GetCanonicalRequest(req *http.Request) string {
+	supportHeaders := initSupportHeaders()
 	req.URL.RawQuery = strings.ReplaceAll(req.URL.Query().Encode(), "+", "%20")
 	canonicalRequest := strings.Join([]string{
 		req.Method,
@@ -83,11 +85,28 @@ func GetCanonicalRequest(req *http.Request, supportHeaders map[string]struct{}) 
 	return canonicalRequest
 }
 
+// Deprecated: This method will be deleted in future versions, once most SP and clients migrates to GNFD1 Auth.
+// See GetMsgToSignInGNFD1
 // GetMsgToSign generate the msg bytes from canonicalRequest to sign
 func GetMsgToSign(req *http.Request) []byte {
-	headers := initSupportHeaders()
-	signBytes := hash.GenerateChecksum([]byte(GetCanonicalRequest(req, headers)))
+	signBytes := hash.GenerateChecksum([]byte(GetCanonicalRequest(req)))
 	return crypto.Keccak256(signBytes)
+}
+
+// GetMsgToSignInGNFD1Auth generate the msg bytes from canonicalRequest to sign
+// This method will be used for the following GNFD1 Auth algorithms:
+// - GNFD1-ECDSA
+// - GNFD1-EDDSA
+func GetMsgToSignInGNFD1Auth(req *http.Request) []byte {
+	return crypto.Keccak256([]byte(GetCanonicalRequest(req)))
+}
+
+// GetMsgToSignInGNFD1AuthForPreSignedURL is only used in SP get Object API.  This util method can be used in by SP side and client side to construct the MsgToSign
+func GetMsgToSignInGNFD1AuthForPreSignedURL(req *http.Request) []byte {
+	queryValues := req.URL.Query()
+	queryValues.Del(HTTPHeaderAuthorization)
+	req.URL.RawQuery = queryValues.Encode()
+	return GetMsgToSignInGNFD1Auth(req)
 }
 
 func initSupportHeaders() map[string]struct{} {
