@@ -1,6 +1,6 @@
 module github.com/bnb-chain/greenfield-common/go
 
-go 1.19
+go 1.20
 
 require (
 	github.com/bnb-chain/greenfield v0.2.4
