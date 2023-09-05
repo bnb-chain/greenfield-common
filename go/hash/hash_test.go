@@ -11,10 +11,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bnb-chain/greenfield/x/storage/types"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/bnb-chain/greenfield-common/go/redundancy"
+	storagetypes "github.com/bnb-chain/greenfield/x/storage/types"
 )
 
 const (
@@ -36,7 +36,7 @@ func TestHash(t *testing.T) {
 	if size != length {
 		t.Errorf("compute segmentSize error")
 	}
-	if redundancyType != types.REDUNDANCY_EC_TYPE {
+	if redundancyType != storagetypes.REDUNDANCY_EC_TYPE {
 		t.Errorf("compare  redundnacy type error")
 	}
 

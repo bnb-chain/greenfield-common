@@ -6,6 +6,7 @@ import (
 	"fmt"
 )
 
+// SegmentInfo describes segment info
 type SegmentInfo struct {
 	SegmentID int
 	Data      []byte
