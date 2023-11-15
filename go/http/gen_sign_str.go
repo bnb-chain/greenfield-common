@@ -20,7 +20,6 @@ var supportHeads = []string{
 // getCanonicalHeaders generate a list of request headers with their values
 func getCanonicalHeaders(req *http.Request, supportHeaders map[string]struct{}) string {
 	var content bytes.Buffer
-	var containHostHeader bool
 	sortHeaders := getSortedHeaders(req, supportHeaders)
 	headerMap := make(map[string][]string)
 	for key, data := range req.Header {
@@ -31,26 +30,16 @@ func getCanonicalHeaders(req *http.Request, supportHeaders map[string]struct{}) 
 		content.WriteString(strings.ToLower(header))
 		content.WriteByte(':')
 
-		if header != "host" {
-			for i, v := range headerMap[header] {
-				if i > 0 {
-					content.WriteByte(',')
-				}
-				trimVal := strings.Join(strings.Fields(v), " ")
-				content.WriteString(trimVal)
+		for i, v := range headerMap[header] {
+			if i > 0 {
+				content.WriteByte(',')
 			}
-			content.WriteByte('\n')
-		} else {
-			containHostHeader = true
-			content.WriteString(GetHostInfo(req))
-			content.WriteByte('\n')
+			trimVal := strings.Join(strings.Fields(v), " ")
+			content.WriteString(trimVal)
 		}
-	}
-
-	if !containHostHeader {
-		content.WriteString(GetHostInfo(req))
 		content.WriteByte('\n')
 	}
+
 	return content.String()
 }
 
